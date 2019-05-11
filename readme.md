@@ -1,4 +1,4 @@
-# cam(era) (m)ultiplex
+# camultiplex (cam(era)-(m)ultiple)
 This project is developed in catkin workspace, aimed at utilizing **multi-thread processing** while taking advantage from the `nodelet`. Data are send via **channel diversity** on the granularity of messages. 
 
 ***
