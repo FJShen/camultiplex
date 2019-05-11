@@ -1,0 +1,12 @@
+<library path="lib/libcamultiplex">
+	
+	<class type="camera::source" base_class_type="nodelet::Nodelet" name="camultiplex/source">
+		<description>THis is the source node in the multiplexed camera network.</description>
+	</class>
+	
+	<class type="camera::drain" base_class_type="nodelet::Nodelet" name="camultiplex/drain">
+		<description>THis is the source node in the multiplexed camera network.</description>
+	</class>
+
+
+</library>
