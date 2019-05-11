@@ -22,17 +22,30 @@ namespace camera{
     class source : public nodelet::Nodelet{
     public:
 	source(){
+	    try{
+		depth_pub = new ros::Publisher[N];
+		rgb_pub = new ros::Publisher[N];
+		throw 1;
+	    }
+	    catch(int e){
+		std::cerr<<"Bad allocation when allocating memory for publishers\n";
+	    }
+	    
 	    NODELET_INFO("camera source node constructed\n");
 	};
 	~source(){
+	    delete[] depth_pub;
+	    delete[] rgb_pub;
 	    NODELET_INFO("camera source node destrcuted\n");
 	}; 
 	virtual void onInit();//mandatory initialization function for all nodelets
 
     private:
-	ros::Publisher depth_pub;
-	ros::Publisher rgb_pub;
+	ros::Publisher* depth_pub;
+	ros::Publisher* rgb_pub;
 	ros::Timer timer;
+
+	int N=2; //this is the number of multiplexs 
 	float FPS = 30; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
 	uint32_t seq = 0;
 	
@@ -49,15 +62,27 @@ namespace camera{
     class drain : public nodelet::Nodelet{
     public:
 	drain(){
+	    try{
+		depth_sub = new ros::Subscriber[N];
+		rgb_sub = new ros::Subscriber[N];
+		throw 1;
+	    }
+	    catch(int e){
+		std::cerr<<"Bad allocation when allocating memory for subscribers\n";
+	    }
 	    NODELET_INFO("camera drain node constructed\n");
 	};
 	~drain(){
+	    delete[] depth_sub;
+	    delete[] rgb_sub;
 	    NODELET_INFO("camera drain node destructed\n");
 	};
 	virtual void onInit();//mandatory initialization function for all nodelets
     private:
-	ros::Subscriber depth_sub;
-	ros::Subscriber rgb_sub;
+	ros::Subscriber* depth_sub;
+	ros::Subscriber* rgb_sub;
+
+	int N; //number of multiplex channels
 
 	//ConstPtr& is necessary for nodelets to work
 	void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg);

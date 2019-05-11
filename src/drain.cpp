@@ -10,14 +10,27 @@
 
 
 namespace camera{
+
+    
     
     void drain::onInit(){
+	
 	//getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
 	ros::NodeHandle& rs = getMTNodeHandle();
-	depth_sub = rs.subscribe<sensor_msgs::Image>("depth", 8, &drain::drain_depth_callback, this);
-	rgb_sub = rs.subscribe<sensor_msgs::Image>("RGB", 8, &drain::drain_rgb_callback, this);
+
+	//define subscribers
+	const std::string s_d("depth");
+	const std::string s_rgb("RGB");
+	for(int i=0; i<N; i++){
+	    depth_sub[i] = rs.subscribe<sensor_msgs::Image>(s_d + std::to_string(i), 8, &drain::drain_depth_callback, this);
+	    rgb_sub[i] = rs.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8, &drain::drain_rgb_callback, this);
+	}
+
 	NODELET_INFO("Camera drain node onInit called\n");
     }
+
+    
+    
 
     //callabck to handle depth frame messages
     void drain::drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg){
@@ -60,6 +73,8 @@ namespace camera{
 	NODELET_DEBUG(c2);
     }
 
+
+
     
     void drain::drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg){
 	
@@ -71,7 +86,6 @@ namespace camera{
 	    //the CV Bridge will auto-convert from RGB to BGR format
 	    cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8); 
 	    //cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
- 
 	}
 	catch (cv_bridge::Exception& e)
 	{
