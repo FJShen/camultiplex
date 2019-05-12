@@ -22,18 +22,29 @@ namespace camera{
     class source : public nodelet::Nodelet{
     public:
 	source(){
+		depth_pub = new (std::nothrow) ros::Publisher[N];
+		rgb_pub = new (std::nothrow) ros::Publisher[N];
+		
+	    if((!depth_pub) || (!rgb_pub)){
+	    	std::cerr<<"Bad memory allocation for publishers\n";
+	    }
+	    
 	    NODELET_INFO("camera source node constructed\n");
 	};
 	~source(){
+	    delete[] depth_pub;
+	    delete[] rgb_pub;
 	    NODELET_INFO("camera source node destrcuted\n");
 	}; 
 	virtual void onInit();//mandatory initialization function for all nodelets
 
     private:
-	ros::Publisher depth_pub;
-	ros::Publisher rgb_pub;
+	ros::Publisher* depth_pub;
+	ros::Publisher* rgb_pub;
 	ros::Timer timer;
-	float FPS = 30; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
+
+	int N=2; //this is the number of multiplexs 
+	float FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
 	uint32_t seq = 0;
 	
 	//rs2::frameset frames;
@@ -49,19 +60,31 @@ namespace camera{
     class drain : public nodelet::Nodelet{
     public:
 	drain(){
+	    
+	    depth_sub = new (std::nothrow) ros::Subscriber[N];
+		rgb_sub = new (std::nothrow) ros::Subscriber[N];
+		
+	    if((!depth_sub) || (!rgb_sub)){
+	    	std::cerr<<"Bad memory allocation for subscribers\n";
+	    }
+	    
 	    NODELET_INFO("camera drain node constructed\n");
 	};
 	~drain(){
+	    delete[] depth_sub;
+	    delete[] rgb_sub;
 	    NODELET_INFO("camera drain node destructed\n");
 	};
 	virtual void onInit();//mandatory initialization function for all nodelets
     private:
-	ros::Subscriber depth_sub;
-	ros::Subscriber rgb_sub;
+	ros::Subscriber* depth_sub;
+	ros::Subscriber* rgb_sub;
+
+	int N=2; //number of multiplex channels
 
 	//ConstPtr& is necessary for nodelets to work
-	void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg);
-	void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg);
+	void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int);
+	void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int);
     };
 
     

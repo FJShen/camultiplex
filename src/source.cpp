@@ -7,28 +7,46 @@
 #include "sensor_msgs/image_encodings.h"
 
 namespace camera{
+
     
     void source::onInit(){
+	
 	//getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
 	ros::NodeHandle& rs = getMTNodeHandle();
 
+	
 	//configure and initialize the camera
 	//according to Intel RS documentation, the max FPS of rgb stream is 60 
     	c.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, FPS);
     	c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS>60)?60:FPS);
     	p.start(c);
+
 	
 	//define publishers
-	depth_pub = rs.advertise<sensor_msgs::Image>("depth", 8);
-        rgb_pub = rs.advertise<sensor_msgs::Image>("RGB", 8);
+	const std::string s_d("depth");
+	const std::string s_rgb("RGB");
+	for(int i=0; i<N; i++){
+	    depth_pub[i] = rs.advertise<sensor_msgs::Image>(s_d+std::to_string(i), 8);
+	    rgb_pub[i] = rs.advertise<sensor_msgs::Image>(s_rgb+std::to_string(i), 8);
+	}
+	//depth_pub = rs.advertise<sensor_msgs::Image>("depth", 8);
+        //rgb_pub = rs.advertise<sensor_msgs::Image>("RGB", 8);
 
+	
 	//use timer to trigger callback
     	timer = rs.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
 	NODELET_INFO("Camera source node onInit called\n");
     }
-	
+
+
+    
 	
     void source::timerCallback(const ros::TimerEvent& event){
+
+	//determine which multiplex channel to use
+	uint32_t channel = seq % N;
+
+	
 	sensor_msgs::Image depth_msg;
 	sensor_msgs::Image rgb_msg;
 	rs2::frameset frames = p.wait_for_frames();
@@ -80,10 +98,16 @@ namespace camera{
 	rgb_msg.encoding = sensor_msgs::image_encodings::RGB8;
 	rgb_msg.step = width_color*3;//each pixel is 3 bytes - red, green, and blue
 
-	depth_pub.publish(depth_msg);
-	rgb_pub.publish(rgb_msg);
+	depth_pub[channel].publish(depth_msg);
+	rgb_pub[channel].publish(rgb_msg);
 
-	NODELET_DEBUG("Both streams published!");
+
+	std::stringstream ss;
+	ss<<"Both streams published to "<<channel<<"\n";
+	std::string str= ss.str();
+	const char* c = str.c_str();
+	
+	NODELET_INFO(c);
 	seq++;
     }
 }

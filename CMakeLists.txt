@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
+find_package(Boost REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -156,6 +157,7 @@ include_directories(
  target_link_libraries(camultiplex
    ${catkin_LIBRARIES} realsense2 ${OpenCV_LIBS}
  )
+ 
 
 #############
 ## Install ##

@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include <librealsense2/rs.hpp>
-#include "camera_nodelet/helper.h"
-#include "camera_nodelet/my_nodes.h"
+#include "camultiplex/helper.h"
+#include "camultiplex/my_nodes.h"
 #include <nodelet/nodelet.h>
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/image_encodings.h"
