@@ -101,7 +101,13 @@ namespace camera{
 	depth_pub[channel].publish(depth_msg);
 	rgb_pub[channel].publish(rgb_msg);
 
-	NODELET_DEBUG("Both streams published!");
+
+	std::stringstream ss;
+	ss<<"Both streams published to "<<channel<<"\n";
+	std::string str= ss.str();
+	const char* c = str.c_str();
+	
+	NODELET_INFO(c);
 	seq++;
     }
 }

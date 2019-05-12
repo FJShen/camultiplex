@@ -22,8 +22,8 @@ namespace camera{
 	const std::string s_d("depth");
 	const std::string s_rgb("RGB");
 	for(int i=0; i<N; i++){
-	    depth_sub[i] = rs.subscribe<sensor_msgs::Image>(s_d + std::to_string(i), 8, &drain::drain_depth_callback, this);
-	    rgb_sub[i] = rs.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8, &drain::drain_rgb_callback, this);
+	    depth_sub[i] = rs.subscribe<sensor_msgs::Image>(s_d + std::to_string(i), 8, boost::bind(&drain::drain_depth_callback, this, _1, i));
+	    rgb_sub[i] = rs.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8, boost::bind(&drain::drain_rgb_callback, this, _1, i));
 	}
 
 	NODELET_INFO("Camera drain node onInit called\n");
@@ -32,8 +32,8 @@ namespace camera{
     
     
 
-    //callabck to handle depth frame messages
-    void drain::drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg){
+    //callback to handle depth frame messages
+    void drain::drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num){
 
 	//there are two ways to convert from a Image message to openCV format
 	//one is to use cv_bridge::toCvCopy, and obtain a changeable copy of the original image
@@ -54,7 +54,7 @@ namespace camera{
 	}
 
 	//print debug information
-	std::string myStr =  "received depth frame"+(msg->header.frame_id)+"\n";
+	std::string myStr =  "received depth frame"+(msg->header.frame_id)+" from channel "+std::to_string(channel_num)+"\n";
 	const char* c = myStr.c_str();
 	NODELET_DEBUG(c);
 
@@ -76,7 +76,7 @@ namespace camera{
 
 
     
-    void drain::drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg){
+    void drain::drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num){
 	
 	cv_bridge::CvImagePtr cv_ptr;
 	cv_bridge::CvImageConstPtr cv_const_ptr;
@@ -93,7 +93,7 @@ namespace camera{
 	    return;
 	}
 
-	std::string myStr =  "received rgb frame"+(msg->header.frame_id)+"\n";
+	std::string myStr =  "received rgb frame"+(msg->header.frame_id)+" from channel "+std::to_string(channel_num)+"\n";
 	const char* c = myStr.c_str();
 	NODELET_DEBUG(c);
 

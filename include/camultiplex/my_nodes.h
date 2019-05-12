@@ -22,13 +22,11 @@ namespace camera{
     class source : public nodelet::Nodelet{
     public:
 	source(){
-	    try{
-		depth_pub = new ros::Publisher[N];
-		rgb_pub = new ros::Publisher[N];
-		throw 1;
-	    }
-	    catch(int e){
-		std::cerr<<"Bad allocation when allocating memory for publishers\n";
+		depth_pub = new (std::nothrow) ros::Publisher[N];
+		rgb_pub = new (std::nothrow) ros::Publisher[N];
+		
+	    if((!depth_pub) || (!rgb_pub)){
+	    	std::cerr<<"Bad memory allocation for publishers\n";
 	    }
 	    
 	    NODELET_INFO("camera source node constructed\n");
@@ -46,7 +44,7 @@ namespace camera{
 	ros::Timer timer;
 
 	int N=2; //this is the number of multiplexs 
-	float FPS = 30; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
+	float FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
 	uint32_t seq = 0;
 	
 	//rs2::frameset frames;
@@ -62,14 +60,14 @@ namespace camera{
     class drain : public nodelet::Nodelet{
     public:
 	drain(){
-	    try{
-		depth_sub = new ros::Subscriber[N];
-		rgb_sub = new ros::Subscriber[N];
-		throw 1;
+	    
+	    depth_sub = new (std::nothrow) ros::Subscriber[N];
+		rgb_sub = new (std::nothrow) ros::Subscriber[N];
+		
+	    if((!depth_sub) || (!rgb_sub)){
+	    	std::cerr<<"Bad memory allocation for subscribers\n";
 	    }
-	    catch(int e){
-		std::cerr<<"Bad allocation when allocating memory for subscribers\n";
-	    }
+	    
 	    NODELET_INFO("camera drain node constructed\n");
 	};
 	~drain(){
@@ -82,11 +80,11 @@ namespace camera{
 	ros::Subscriber* depth_sub;
 	ros::Subscriber* rgb_sub;
 
-	int N; //number of multiplex channels
+	int N=2; //number of multiplex channels
 
 	//ConstPtr& is necessary for nodelets to work
-	void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg);
-	void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg);
+	void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int);
+	void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int);
     };
 
     
