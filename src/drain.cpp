@@ -56,7 +56,7 @@ namespace camera{
 	//print debug information
 	std::string myStr =  "received depth frame"+(msg->header.frame_id)+" from channel "+std::to_string(channel_num)+"\n";
 	const char* c = myStr.c_str();
-	NODELET_DEBUG(c);
+	NODELET_DEBUG("%s",c);
 
 	//name the image with the timestamp obtained from the camera
 	//Attention! this is not time since epoch (1970) 
@@ -70,7 +70,7 @@ namespace camera{
 	//print debug information
         myStr = "saved depth frame"+(msg->header.frame_id)+"\n";
 	const char* c2 = myStr.c_str();
-	NODELET_DEBUG(c2);
+	NODELET_DEBUG("%s",c2);
     }
 
 
@@ -95,7 +95,7 @@ namespace camera{
 
 	std::string myStr =  "received rgb frame"+(msg->header.frame_id)+" from channel "+std::to_string(channel_num)+"\n";
 	const char* c = myStr.c_str();
-	NODELET_DEBUG(c);
+	NODELET_DEBUG("%s",c);
 
 	unsigned int seconds = msg->header.stamp.sec;
 	unsigned int nanoseconds = msg->header.stamp.nsec;
@@ -106,6 +106,6 @@ namespace camera{
 
         myStr = "saved rgb frame"+(msg->header.frame_id)+"\n";
 	const char* c2 = myStr.c_str();
-	NODELET_DEBUG(c2);
+	NODELET_DEBUG("%s", c2);
     }
 }

@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="nodelet" type="nodelet" name="drain"
+	args="load camultiplex/drain nodelet_manager" />
+</launch>

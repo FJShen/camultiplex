@@ -26,7 +26,7 @@ namespace camera{
 		rgb_pub = new (std::nothrow) ros::Publisher[N];
 		
 	    if((!depth_pub) || (!rgb_pub)){
-	    	std::cerr<<"Bad memory allocation for publishers\n";
+	    	NODELET_FATAL("Bad memory allocation for publishers\n");
 	    }
 	    
 	    NODELET_INFO("camera source node constructed\n");
@@ -65,7 +65,7 @@ namespace camera{
 		rgb_sub = new (std::nothrow) ros::Subscriber[N];
 		
 	    if((!depth_sub) || (!rgb_sub)){
-	    	std::cerr<<"Bad memory allocation for subscribers\n";
+	    	NODELET_FATAL("Bad memory allocation for subscribers\n");
 	    }
 	    
 	    NODELET_INFO("camera drain node constructed\n");
