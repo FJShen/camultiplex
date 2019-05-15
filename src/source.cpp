@@ -107,7 +107,7 @@ namespace camera{
 	std::string str= ss.str();
 	const char* c = str.c_str();
 	
-	NODELET_INFO(c);
+	NODELET_DEBUG("%s", c);
 	seq++;
     }
 }

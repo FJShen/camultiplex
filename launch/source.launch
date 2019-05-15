@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="nodelet" type="nodelet" name="source"
+	args="load camultiplex/source nodelet_manager" />
+</launch>
