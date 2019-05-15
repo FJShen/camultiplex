@@ -16,14 +16,22 @@ namespace camera{
     void drain::onInit(){
 	
 	//getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
-	ros::NodeHandle& rs = getMTNodeHandle();
+	ros::NodeHandle& rh = getMTNodeHandle();
+	ros::NodeHandle& rhp = getMTPrivateNodeHandle();
+
+        if(!rhp.getParam("diversity", N)){
+	    NODELET_WARN_STREAM_NAMED("camera drain", "No parameter for drain channel diversity number specified, will use default amount "<< N);
+	}
+	else{
+	    NODELET_INFO_STREAM_NAMED("camera drain", "Number of drain channel diversity: "<<N);
+	}
 
 	//define subscribers
 	const std::string s_d("depth");
 	const std::string s_rgb("RGB");
 	for(int i=0; i<N; i++){
-	    depth_sub[i] = rs.subscribe<sensor_msgs::Image>(s_d + std::to_string(i), 8, boost::bind(&drain::drain_depth_callback, this, _1, i));
-	    rgb_sub[i] = rs.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8, boost::bind(&drain::drain_rgb_callback, this, _1, i));
+	    depth_sub[i] = rh.subscribe<sensor_msgs::Image>(s_d + std::to_string(i), 8, boost::bind(&drain::drain_depth_callback, this, _1, i));
+	    rgb_sub[i] = rh.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8, boost::bind(&drain::drain_rgb_callback, this, _1, i));
 	}
 
 	NODELET_INFO("Camera drain node onInit called\n");

@@ -1,4 +1,6 @@
 <launch>
   <node pkg="nodelet" type="nodelet" name="drain"
-	args="load camultiplex/drain nodelet_manager" />
+	args="load camultiplex/drain nodelet_manager">
+    <param name="diversity" type="int" value="2" />    
+  </node>
 </launch>
