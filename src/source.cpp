@@ -12,7 +12,15 @@ namespace camera{
     void source::onInit(){
 	
 	//getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
-	ros::NodeHandle& rs = getMTNodeHandle();
+	ros::NodeHandle& rh = getMTNodeHandle();
+	ros::NodeHandle& rph = getMTPrivateNodeHandle();
+
+	if(!rph.getParam("diversity", N)){
+	    NODELET_WARN_STREAM_NAMED("camera source", "No parameter for number of source channel diversity specified, will use default "<< N);
+	}
+	else{
+	    NODELET_INFO_STREAM_NAMED("camera source", "Number of source channel diversity: "<<N);
+	}
 
 	
 	//configure and initialize the camera
@@ -26,15 +34,15 @@ namespace camera{
 	const std::string s_d("depth");
 	const std::string s_rgb("RGB");
 	for(int i=0; i<N; i++){
-	    depth_pub[i] = rs.advertise<sensor_msgs::Image>(s_d+std::to_string(i), 8);
-	    rgb_pub[i] = rs.advertise<sensor_msgs::Image>(s_rgb+std::to_string(i), 8);
+	    depth_pub[i] = rh.advertise<sensor_msgs::Image>(s_d+std::to_string(i), 8);
+	    rgb_pub[i] = rh.advertise<sensor_msgs::Image>(s_rgb+std::to_string(i), 8);
 	}
-	//depth_pub = rs.advertise<sensor_msgs::Image>("depth", 8);
-        //rgb_pub = rs.advertise<sensor_msgs::Image>("RGB", 8);
+	//depth_pub = rh.advertise<sensor_msgs::Image>("depth", 8);
+        //rgb_pub = rh.advertise<sensor_msgs::Image>("RGB", 8);
 
 	
 	//use timer to trigger callback
-    	timer = rs.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
+    	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
 	NODELET_INFO("Camera source node onInit called\n");
     }
 
