@@ -1,5 +1,5 @@
 # camultiplex
-This project is developed in catkin workspace, aimed at utilizing **multi-thread processing** while taking advantage from the `nodelet`. Data are send via **channel diversity** on the granularity of messages. 
+This project is developed in catkin workspace, aimed at utilizing **multi-thread processing** while taking advantage from the `nodelet`. Data are sent via **channel diversity** on the granularity of messages. 
 
 ***
 
