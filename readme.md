@@ -9,3 +9,12 @@ To solve this problem, I create multiple topics, and rotationally send messages 
 
 Based on observation, two channels shall be enough for 60 FPS 640*480 pixel resolution.  
 
+***
+
+# Command Line method
+## bring up nodelet manager
+rosrun nodelet nodelet manager \__name:=nodelet_manager
+## bring up camera drain
+rosrun nodelet nodelet load camultiplex/drain nodelet_manager _diversity:=2
+## bring up camera source
+rosrun nodelet nodelet load camultiplex/source nodelet_manager _diversity:=2
