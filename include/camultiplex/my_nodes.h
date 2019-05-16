@@ -63,15 +63,7 @@ namespace camera{
  
     class drain : public nodelet::Nodelet{
     public:
-	drain(){
-	    
-	    depth_sub = new (std::nothrow) ros::Subscriber[N];
-		rgb_sub = new (std::nothrow) ros::Subscriber[N];
-		
-	    if((!depth_sub) || (!rgb_sub)){
-	    	NODELET_FATAL("Bad memory allocation for subscribers\n");
-	    }
-	    
+	drain(){  
 	    NODELET_INFO("camera drain node constructed\n");
 	};
 	~drain(){

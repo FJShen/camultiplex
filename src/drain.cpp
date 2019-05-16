@@ -19,12 +19,19 @@ namespace camera{
 	ros::NodeHandle& rh = getMTNodeHandle();
 	ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 
-        /*if(!rhp.getParam("diversity", N)){
-	  NODELET_WARN_STREAM_NAMED("camera drain", "No parameter for drain channel diversity number specified, will use default amount "<< N);
-	  }
-	  else{
-	  NODELET_INFO_STREAM_NAMED("camera drain", "Number of drain channel diversity: "<<N);
-	  }*/
+        if(!rhp.getParam("diversity", N)){
+	    NODELET_WARN_STREAM_NAMED("camera drain", "No parameter for drain channel diversity number specified, will use default amount "<< N);
+	}
+	else{
+	    NODELET_INFO_STREAM_NAMED("camera drain", "Number of drain channel diversity: "<<N);
+	}
+		    
+	depth_sub = new (std::nothrow) ros::Subscriber[N];
+	rgb_sub = new (std::nothrow) ros::Subscriber[N];
+		
+	if((!depth_sub) || (!rgb_sub)){
+	    NODELET_FATAL("Bad memory allocation for subscribers\n");
+	}
 
 	//define subscribers
 	const std::string s_d("depth");
