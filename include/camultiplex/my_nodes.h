@@ -36,6 +36,8 @@ namespace camera{
 	    delete[] rgb_pub;
 	    ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 	    rhp.deleteParam("diversity");
+	    ros::NodeHandle& rh = getMTNodeHandle();
+	    rh.deleteParam("start_time");
 	    NODELET_INFO("camera source node destrcuted\n");
 	}; 
 	virtual void onInit();//mandatory initialization function for all nodelets

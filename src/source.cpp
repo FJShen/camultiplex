@@ -5,6 +5,7 @@
 #include <nodelet/nodelet.h>
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/image_encodings.h"
+#include <boost/filesystem.hpp>
 
 namespace camera{
 
@@ -15,12 +16,19 @@ namespace camera{
 	ros::NodeHandle& rh = getMTNodeHandle();
 	ros::NodeHandle& rph = getMTPrivateNodeHandle();
 
-	if(!rph.getParam("diversity", N)){
+	/*if(!rph.getParam("diversity", N)){
 	    NODELET_WARN_STREAM_NAMED("camera source", "No parameter for number of source channel diversity specified, will use default "<< N);
 	}
 	else{
 	    NODELET_INFO_STREAM_NAMED("camera source", "Number of source channel diversity: "<<N);
-	}
+	    }*/
+
+	//set a parameter that describes the time stamp of starting
+	std::string time_of_start = helper::get_time_stamp_str();
+	rh.setParam("start_time", time_of_start);	
+	
+	
+	NODELET_INFO_STREAM("Time-of-start set up as parameter \"start_time\", value is "<<time_of_start<<". This is used as the unique identifier for the folder created during this recording.");
 
 	
 	//configure and initialize the camera
@@ -28,7 +36,7 @@ namespace camera{
     	c.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, FPS);
     	c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS>60)?60:FPS);
     	p.start(c);
-
+	NODELET_INFO("device started!");
 	
 	//define publishers
 	const std::string s_d("depth");

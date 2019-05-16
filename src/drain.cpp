@@ -19,12 +19,12 @@ namespace camera{
 	ros::NodeHandle& rh = getMTNodeHandle();
 	ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 
-        if(!rhp.getParam("diversity", N)){
-	    NODELET_WARN_STREAM_NAMED("camera drain", "No parameter for drain channel diversity number specified, will use default amount "<< N);
-	}
-	else{
-	    NODELET_INFO_STREAM_NAMED("camera drain", "Number of drain channel diversity: "<<N);
-	}
+        /*if(!rhp.getParam("diversity", N)){
+	  NODELET_WARN_STREAM_NAMED("camera drain", "No parameter for drain channel diversity number specified, will use default amount "<< N);
+	  }
+	  else{
+	  NODELET_INFO_STREAM_NAMED("camera drain", "Number of drain channel diversity: "<<N);
+	  }*/
 
 	//define subscribers
 	const std::string s_d("depth");
@@ -49,6 +49,11 @@ namespace camera{
 	cv_bridge::CvImagePtr cv_ptr;//for cv_bridge::toCvCopy
 	cv_bridge::CvImageConstPtr cv_const_ptr; //for cv_bridge::toCvShare
 
+	ros::NodeHandle& rh = getMTNodeHandle();
+	std::string time_of_start;
+	rh.getParam("start_time", time_of_start);
+
+	
 	//since we are merely saving the image, we do not write to the image. So we only need a reference to the original image
 	try
 	{
@@ -88,6 +93,9 @@ namespace camera{
 	
 	cv_bridge::CvImagePtr cv_ptr;
 	cv_bridge::CvImageConstPtr cv_const_ptr;
+	ros::NodeHandle& rh = getMTNodeHandle();
+	std::string time_of_start;
+	rh.getParam("start_time", time_of_start);
 	
 	try
 	{
