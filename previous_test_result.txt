@@ -1,0 +1,36 @@
+1. Check performance difference of MTNodeHandle and NodeHandle in nodelet
+	1.1 Let nodelet run until 2048
+	1.2 Let nodelet count occurences of lost frame
+	1.3 Compare lost number
+2. Try use conventional nodelet, but this time with Asynchronous spinner
+
+
+LOG
+NODELET 30 FPS: [ INFO] [1557354046.375826282]: Among a total of 2048 frames, 0 depth frames were lost, 0 rgb frames were lost.
+NODELET 30 FPS: [ INFO] [1557354711.783802281]: Among a total of 2048 frames, 0 depth frames were lost, 0 rgb frames were lost.
+
+NODELET 60 FPS: [ INFO] [1557354466.339767166]: Among a total of 2048 frames, 379 depth frames were lost, 95 rgb frames were lost.
+NODELET 60 FPS: [ INFO] [1557354527.622983562]: Among a total of 2048 frames, 402 depth frames were lost, 240 rgb frames were lost.
+NODELET 60 FPS: [ INFO] [1557354599.485964025]: Among a total of 2048 frames, 342 depth frames were lost, 146 rgb frames were lost.
+
+
+
+CONVEN SINGLE THRD 30 FPS: [ INFO] [1557359356.810988811]: Among a total of 2048 frames, 0 depth frames were lost, 0 rgb frames were lost.
+
+CONVEN SINGLE THRD 60 FPS: [ INFO] [1557359607.930076258]: Among a total of 2048 frames, 642 depth frames were lost, 626 rgb frames were lost.
+CONVEN SINGLE THRD 60 FPS: [ INFO] [1557359683.296317544]: Among a total of 2048 frames, 636 depth frames were lost, 645 rgb frames were lost.
+CONVEN SINGLE THRD 60 FPS: [ INFO] [1557359745.378667403]: Among a total of 2048 frames, 641 depth frames were lost, 621 rgb frames were lost.
+
+CONVEN ASYNC 6 THRD 60 FPS: [ INFO] [1557360011.629328194]: Among a total of 2048 frames, 305 depth frames were lost, 274 rgb frames were lost.
+CONVEN ASYNC 6 THRD 60 FPS: [ INFO] [1557360092.457079181]: Among a total of 2048 frames, 282 depth frames were lost, 181 rgb frames were lost.
+CONVEN ASYNC 6 THRD 60 FPS: [ INFO] [1557360171.775701340]: Among a total of 2048 frames, 274 depth frames were lost, 204 rgb frames were lost.
+
+CONVEN UDP 60 FPS: [ INFO] [1557360506.222755583]: Among a total of 2048 frames, 591 depth frames were lost, 524 rgb frames were lost.
+CONVEN UDP 60 FPS: [ INFO] [1557360563.502693010]: Among a total of 2048 frames, 561 depth frames were lost, 501 rgb frames were lost.
+CONVEN UDP 60 FPS: [ INFO] [1557360645.012111368]: Among a total of 2048 frames, 630 depth frames were lost, 543 rgb frames were lost.
+
+CONVEN UDP+ASYNC 6 THRD 60 FPS: [ INFO] [1557360776.153009472]: Among a total of 2048 frames, 322 depth frames were lost, 461 rgb frames were lost.
+CONVEN UDP+ASYNC 6 THRD 60 FPS: [ INFO] [1557360866.792442658]: Among a total of 2048 frames, 249 depth frames were lost, 408 rgb frames were lost.
+CONVEN UDP+ASYNC 6 THRD 60 FPS: [ INFO] [1557360946.901100639]: Among a total of 2048 frames, 250 depth frames were lost, 393 rgb frames were lost.
+
+
