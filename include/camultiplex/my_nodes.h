@@ -22,13 +22,6 @@ namespace camera{
     class source : public nodelet::Nodelet{
     public:
 	source(){
-		depth_pub = new (std::nothrow) ros::Publisher[N];
-		rgb_pub = new (std::nothrow) ros::Publisher[N];
-		
-	    if((!depth_pub) || (!rgb_pub)){
-	    	NODELET_FATAL("Bad memory allocation for publishers\n");
-	    }
-	    
 	    NODELET_INFO("camera source node constructed\n");
 	};
 	~source(){
@@ -37,7 +30,7 @@ namespace camera{
 	    ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 	    rhp.deleteParam("diversity");
 	    ros::NodeHandle& rh = getMTNodeHandle();
-	    rh.deleteParam("start_time");
+	    rh.deleteParam("rs_start_time");
 	    NODELET_INFO("camera source node destrcuted\n");
 	}; 
 	virtual void onInit();//mandatory initialization function for all nodelets

@@ -131,6 +131,7 @@ include_directories(
    src/source.cpp
    src/drain.cpp
    src/export_so_library.cpp
+   src/helper.cpp
  )
 
 ## Add cmake target dependencies of the library

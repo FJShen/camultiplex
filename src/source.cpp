@@ -16,16 +16,25 @@ namespace camera{
 	ros::NodeHandle& rh = getMTNodeHandle();
 	ros::NodeHandle& rph = getMTPrivateNodeHandle();
 
-	/*if(!rph.getParam("diversity", N)){
-	    NODELET_WARN_STREAM_NAMED("camera source", "No parameter for number of source channel diversity specified, will use default "<< N);
+	if(!rph.getParam("diversity", N)){
+	    NODELET_WARN_STREAM_NAMED("camera source", "No parameter for source channel diversity specified, will use default: "<< N);
 	}
 	else{
 	    NODELET_INFO_STREAM_NAMED("camera source", "Number of source channel diversity: "<<N);
-	    }*/
+	}
+
+	depth_pub = new (std::nothrow) ros::Publisher[N];
+	rgb_pub = new (std::nothrow) ros::Publisher[N];
+		
+	if((!depth_pub) || (!rgb_pub)){
+	    NODELET_FATAL("Bad memory allocation for publishers\n");
+	}
+
+
 
 	//set a parameter that describes the time stamp of starting
 	std::string time_of_start = helper::get_time_stamp_str();
-	rh.setParam("start_time", time_of_start);	
+	rh.setParam("rs_start_time", time_of_start);	
 	
 	
 	NODELET_INFO_STREAM("Time-of-start set up as parameter \"start_time\", value is "<<time_of_start<<". This is used as the unique identifier for the folder created during this recording.");
