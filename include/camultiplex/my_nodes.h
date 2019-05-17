@@ -17,13 +17,18 @@
  *camera::drain collects depth and rgb frames from the topics and stores them to file system
  */
 
+#define RGB 0x00000000
+#define DEPTH 0x00000001
+
 namespace camera{
 
     class source : public nodelet::Nodelet{
     public:
+	
 	source(){
 	    NODELET_INFO("camera source node constructed\n");
 	};
+	
 	~source(){
 	    delete[] depth_pub;
 	    delete[] rgb_pub;
@@ -32,7 +37,8 @@ namespace camera{
 	    ros::NodeHandle& rh = getMTNodeHandle();
 	    rh.deleteParam("rs_start_time");
 	    NODELET_INFO("camera source node destrcuted\n");
-	}; 
+	};
+	
 	virtual void onInit();//mandatory initialization function for all nodelets
 
     private:
@@ -40,7 +46,7 @@ namespace camera{
 	ros::Publisher* rgb_pub;
 	ros::Timer timer;
 
-	int N=2; //this is the default number of channel diversity 
+	int N = 2; //this is the default number of channel diversity 
 	float FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
 	uint32_t seq = 0;
 	
@@ -56,9 +62,11 @@ namespace camera{
  
     class drain : public nodelet::Nodelet{
     public:
+	
 	drain(){  
 	    NODELET_INFO("camera drain node constructed\n");
 	};
+	
 	~drain(){
 	    delete[] depth_sub;
 	    delete[] rgb_sub;
@@ -66,7 +74,9 @@ namespace camera{
 	    rhp.deleteParam("diversity");
 	    NODELET_INFO("camera drain node destructed\n");
 	};
+	
 	virtual void onInit();//mandatory initialization function for all nodelets
+	
     private:
 	ros::Subscriber* depth_sub;
 	ros::Subscriber* rgb_sub;
@@ -76,6 +86,8 @@ namespace camera{
 	//ConstPtr& is necessary for nodelets to work
 	void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int);
 	void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int);
+
+	bool save_image(const sensor_msgs::Image::ConstPtr&, unsigned int);
     };
 
     

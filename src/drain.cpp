@@ -50,33 +50,45 @@ namespace camera{
     //callback to handle depth frame messages
     void drain::drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num){
 
+	//print debug information
+	NODELET_DEBUG_STREAM( "received depth frame"
+			      << (msg->header.frame_id) << " from channel "
+			      << std::to_string(channel_num));
+
+	save_image(msg, DEPTH);
+	
+	//print debug information
+	NODELET_DEBUG_STREAM("saved depth frame" << (msg->header.frame_id));
+    }
+
+
+
+    
+    void drain::drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num){
+
+        NODELET_DEBUG_STREAM( "received rgb frame"
+			      << (msg->header.frame_id) << " from channel "
+			      << std::to_string(channel_num));
+
+	save_image(msg, RGB);
+	
+        NODELET_DEBUG_STREAM("saved rgb frame" << (msg->header.frame_id));
+    }
+
+
+
+    
+    bool drain::save_image(const sensor_msgs::Image::ConstPtr& msg, unsigned int channel){
+	
 	//there are two ways to convert from a Image message to openCV format
 	//one is to use cv_bridge::toCvCopy, and obtain a changeable copy of the original image
 	//the other way is to use cv_bridge::toCvCopy and obtain a reference to the same memory space that the ROS message holds, which forbids writing 
-	cv_bridge::CvImagePtr cv_ptr;//for cv_bridge::toCvCopy
-	cv_bridge::CvImageConstPtr cv_const_ptr; //for cv_bridge::toCvShare
-
+	cv_bridge::CvImageConstPtr cv_const_ptr;
+	
 	ros::NodeHandle& rh = getMTNodeHandle();
+	
 	std::string time_of_start;
 	rh.getParam("rs_start_time", time_of_start);
-
-	
-	//since we are merely saving the image, we do not write to the image. So we only need a reference to the original image
-	try
-	{
-	    cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
-	    //cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::MONO16); 
-	}
-	catch (cv_bridge::Exception& e)
-	{
-	    NODELET_ERROR("cv_bridge exception: %s", e.what());
-	    return;
-	}
-
-	//print debug information
-	std::string myStr =  "received depth frame"+(msg->header.frame_id)+" from channel "+std::to_string(channel_num)+"\n";
-	const char* c = myStr.c_str();
-	NODELET_DEBUG("%s",c);
 
 	//name the image with the timestamp obtained from the camera
 	//Attention! this is not time since epoch (1970) 
@@ -84,51 +96,37 @@ namespace camera{
 	unsigned int nanoseconds = msg->header.stamp.nsec;
 	std::stringstream ss;
 	ss<<std::setw(10)<<std::setfill('0')<<seconds<<"."<<std::setw(9)<<std::setfill('0')<<nanoseconds;
-	myStr = "/media/nvidia/ExtremeSSD/depth_images/"+ss.str()+".png";
-	cv::imwrite(myStr, cv_const_ptr->image);
-
-	//print debug information
-        myStr = "saved depth frame"+(msg->header.frame_id)+"\n";
-	const char* c2 = myStr.c_str();
-	NODELET_DEBUG("%s",c2);
-    }
-
-
-
-    
-    void drain::drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num){
 	
-	cv_bridge::CvImagePtr cv_ptr;
-	cv_bridge::CvImageConstPtr cv_const_ptr;
-	ros::NodeHandle& rh = getMTNodeHandle();
-	std::string time_of_start;
-	rh.getParam("rs_start_time", time_of_start);
+	std::string myStr = "/media/nvidia/ExtremeSSD";
 	
+	//since we are merely saving the image, we do not write to the image. So we only need a reference to the original image
 	try
 	{
-	    //the CV Bridge will auto-convert from RGB to BGR format
-	    cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8); 
-	    //cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+	    switch(channel){
+		
+	    case RGB:
+		cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
+		myStr = myStr + "/rgb_images/" + ss.str() + ".jpg";
+		break;
+		
+	    case DEPTH:
+		 cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
+		 myStr = myStr + "/depth_images/" + ss.str() + ".png";
+		 break;
+		 
+	    default:
+		NODELET_ERROR("save_image: channel type is neither depth nor rgb, re-check your code!");
+		break;
+	    }
 	}
 	catch (cv_bridge::Exception& e)
 	{
 	    NODELET_ERROR("cv_bridge exception: %s", e.what());
-	    return;
+	    return false;
 	}
-
-	std::string myStr =  "received rgb frame"+(msg->header.frame_id)+" from channel "+std::to_string(channel_num)+"\n";
-	const char* c = myStr.c_str();
-	NODELET_DEBUG("%s",c);
-
-	unsigned int seconds = msg->header.stamp.sec;
-	unsigned int nanoseconds = msg->header.stamp.nsec;
-	std::stringstream ss;
-	ss<<std::setw(10)<<std::setfill('0')<<seconds<<"."<<std::setw(9)<<std::setfill('0')<<nanoseconds;
-	myStr = "/media/nvidia/ExtremeSSD/rgb_images/"+ss.str()+".jpg";
+	
+	
 	cv::imwrite(myStr, cv_const_ptr->image);
-
-        myStr = "saved rgb frame"+(msg->header.frame_id)+"\n";
-	const char* c2 = myStr.c_str();
-	NODELET_DEBUG("%s", c2);
+	return true;
     }
 }

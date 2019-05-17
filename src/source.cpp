@@ -79,7 +79,7 @@ namespace camera{
 
 	//we need to convert from millisecond to a [second-nanosecond] format 
 	unsigned int second = frame_timestamp/1000; //obtain the "second" part
-	unsigned int nanosecond = (frame_timestamp-1000*(double)(second))*1e6; //obtain the "nanosecond" part
+	unsigned int nanosecond = (frame_timestamp-1000*(double)(second))*1000000; //obtain the "nanosecond" part
 	
 	rs2::depth_frame depth = frames.get_depth_frame();
 	rs2::video_frame color = frames.get_color_frame();
