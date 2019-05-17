@@ -41,7 +41,19 @@ namespace camera{
 	    rgb_sub[i] = rh.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8, boost::bind(&drain::drain_rgb_callback, this, _1, i));
 	}
 
+	timer = rh.createTimer(ros::Duration(12), &drain::timerCallback, this);
+
 	NODELET_INFO("Camera drain node onInit called\n");
+    }
+
+
+    drain::~drain(){
+	delete[] depth_sub;
+	delete[] rgb_sub;
+	ros::NodeHandle& rhp = getMTPrivateNodeHandle();
+	rhp.deleteParam("diversity");   
+	
+	NODELET_INFO("camera drain node destructed\n");
     }
 
     
@@ -56,6 +68,7 @@ namespace camera{
 			      << std::to_string(channel_num));
 
 	save_image(msg, DEPTH);
+	depth_counter.updateSeq(std::stoul(msg->header.frame_id));
 	
 	//print debug information
 	NODELET_DEBUG_STREAM("saved depth frame" << (msg->header.frame_id));
@@ -71,12 +84,21 @@ namespace camera{
 			      << std::to_string(channel_num));
 
 	save_image(msg, RGB);
+	rgb_counter.updateSeq(std::stoul(msg->header.frame_id));
 	
         NODELET_DEBUG_STREAM("saved rgb frame" << (msg->header.frame_id));
     }
 
 
 
+
+    void drain::timerCallback(const ros::TimerEvent& event){
+	NODELET_WARN_STREAM("Drain: Depth received approximately "<<depth_counter.getCurrentSeq()<<" frames, total loss is approximately "<<depth_counter.getLoss()<<"\n");
+	NODELET_WARN_STREAM("Drain: RGB received approximately "<<rgb_counter.getCurrentSeq()<<" frames, total loss is approximately "<<rgb_counter.getLoss()<<"\n");
+    }
+
+
+    
     
     bool drain::save_image(const sensor_msgs::Image::ConstPtr& msg, unsigned int channel){
 	
@@ -110,9 +132,9 @@ namespace camera{
 		break;
 		
 	    case DEPTH:
-		 cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
-		 myStr = myStr + "/depth_images/" + ss.str() + ".png";
-		 break;
+		cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
+		myStr = myStr + "/depth_images/" + ss.str() + ".png";
+		break;
 		 
 	    default:
 		NODELET_ERROR("save_image: channel type is neither depth nor rgb, re-check your code!");

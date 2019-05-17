@@ -46,6 +46,7 @@ namespace camera{
     	c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS>60)?60:FPS);
     	p.start(c);
 	NODELET_INFO("device started!");
+
 	
 	//define publishers
 	const std::string s_d("depth");
@@ -54,8 +55,6 @@ namespace camera{
 	    depth_pub[i] = rh.advertise<sensor_msgs::Image>(s_d+std::to_string(i), 8);
 	    rgb_pub[i] = rh.advertise<sensor_msgs::Image>(s_rgb+std::to_string(i), 8);
 	}
-	//depth_pub = rh.advertise<sensor_msgs::Image>("depth", 8);
-        //rgb_pub = rh.advertise<sensor_msgs::Image>("RGB", 8);
 
 	
 	//use timer to trigger callback
@@ -126,13 +125,8 @@ namespace camera{
 	depth_pub[channel].publish(depth_msg);
 	rgb_pub[channel].publish(rgb_msg);
 
-
-	std::stringstream ss;
-	ss<<"Both streams published to "<<channel<<"\n";
-	std::string str= ss.str();
-	const char* c = str.c_str();
 	
-	NODELET_DEBUG("%s", c);
+	NODELET_DEBUG_STREAM("Both streams published to "<<channel<<"\n");
 	seq++;
     }
 }

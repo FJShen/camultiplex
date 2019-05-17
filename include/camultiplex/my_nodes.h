@@ -17,8 +17,8 @@
  *camera::drain collects depth and rgb frames from the topics and stores them to file system
  */
 
-#define RGB 0x00000000
-#define DEPTH 0x00000001
+#define RGB 0x0000
+#define DEPTH 0x0001
 
 namespace camera{
 
@@ -67,30 +67,31 @@ namespace camera{
 	    NODELET_INFO("camera drain node constructed\n");
 	};
 	
-	~drain(){
-	    delete[] depth_sub;
-	    delete[] rgb_sub;
-	    ros::NodeHandle& rhp = getMTPrivateNodeHandle();
-	    rhp.deleteParam("diversity");
-	    NODELET_INFO("camera drain node destructed\n");
-	};
+	~drain();
 	
 	virtual void onInit();//mandatory initialization function for all nodelets
 	
     private:
 	ros::Subscriber* depth_sub;
 	ros::Subscriber* rgb_sub;
-
+	ros::Timer timer;
+	
+	helper::counter depth_counter;
+	helper::counter rgb_counter;
+       
 	int N=3; //default number of channel multiplex diversity
 
 	//ConstPtr& is necessary for nodelets to work
 	void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int);
 	void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int);
 
+	void timerCallback(const ros::TimerEvent& event);
+	
 	bool save_image(const sensor_msgs::Image::ConstPtr&, unsigned int);
     };
 
-    
+
+   
 }
 
 
