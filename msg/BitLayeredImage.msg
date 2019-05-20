@@ -1,0 +1,2 @@
+sensor_msgs/Image HighEightBitLayer
+sensor_msgs/Image LowEightBitLayer

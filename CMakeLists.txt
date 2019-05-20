@@ -56,6 +56,7 @@ find_package(Boost REQUIRED)
  add_message_files(
    FILES
    TTest.msg 
+   BitLayeredImage.msg
  )
 
 ## Generate services in the 'srv' folder

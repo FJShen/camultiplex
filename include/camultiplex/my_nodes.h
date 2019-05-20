@@ -11,6 +11,8 @@
 #include "cv_bridge/cv_bridge.h"
 #include <opencv2/opencv.hpp>
 
+#include "camultiplex/BitLayeredImage.h"
+
 /*
  *Define two classes: source and drain that act as our nodelets. Both inherits the base class "Nodelet::nodelet"
  *camera::source fetches new frames from the camera and sends them to the topics

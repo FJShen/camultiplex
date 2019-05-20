@@ -8,6 +8,9 @@
 #include "sensor_msgs/image_encodings.h"
 #include "cv_bridge/cv_bridge.h"
 
+//include self-defined msg type
+#include "camultiplex/BitLayeredImage.h"
+
 
 namespace camera{
 
@@ -39,6 +42,8 @@ namespace camera{
 	for(int i=0; i<N; i++){
 	    depth_sub[i] = rh.subscribe<sensor_msgs::Image>(s_d + std::to_string(i), 8, boost::bind(&drain::drain_depth_callback, this, _1, i));
 	    rgb_sub[i] = rh.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8, boost::bind(&drain::drain_rgb_callback, this, _1, i));
+	    //depth_sub[i] = rh.subscribe<camultiplex::BitLayeredImage>(s_d + std::to_string(i), 8, boost::bind(&drain::drain_depth_callback, this, _1, i));
+	    
 	}
 
 	timer = rh.createTimer(ros::Duration(12), &drain::timerCallback, this);
@@ -61,11 +66,11 @@ namespace camera{
 
     //callback to handle depth frame messages
     void drain::drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num){
-
 	//print debug information
 	NODELET_DEBUG_STREAM( "received depth frame"
 			      << (msg->header.frame_id) << " from channel "
 			      << std::to_string(channel_num));
+
 
 	save_image(msg, DEPTH);
 	depth_counter.updateSeq(std::stoul(msg->header.frame_id));
@@ -132,8 +137,8 @@ namespace camera{
 		break;
 		
 	    case DEPTH:
-		cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
-		myStr = myStr + "/depth_images/" + ss.str() + ".png";
+		cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO8);
+		myStr = myStr + "/depth_images/" + ss.str() + ".jpg";
 		break;
 		 
 	    default:
