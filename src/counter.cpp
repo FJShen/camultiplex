@@ -16,7 +16,7 @@ namespace helper{
 	}
     }
 
-    unsigned long counter::getLoss(){
+    long int counter::getLoss(){
 	return loss;
     }
 

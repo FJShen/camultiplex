@@ -44,6 +44,7 @@ namespace camera{
     private:
 	ros::Publisher* depth_pub;
 	ros::Publisher* rgb_pub;
+	ros::Publisher T_pub;
 	ros::Timer timer;
 
 	int N = 2; //this is the default number of channel diversity 

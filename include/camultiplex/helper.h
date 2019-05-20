@@ -14,13 +14,13 @@ namespace helper{
     class counter{
     public:
     counter() : first_time(true), loss(0){ }
-	unsigned long getLoss();
+	long int getLoss();
 	unsigned long getCurrentSeq();
 	void updateSeq(unsigned long);
     private:
 	unsigned long current_seq;
 	unsigned long previous_seq;
-	unsigned long loss;
+	long int loss;
 	bool first_time;
     };
     

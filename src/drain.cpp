@@ -93,8 +93,8 @@ namespace camera{
 
 
     void drain::timerCallback(const ros::TimerEvent& event){
-	NODELET_WARN_STREAM("Drain: Depth received approximately "<<depth_counter.getCurrentSeq()<<" frames, total loss is approximately "<<depth_counter.getLoss()<<"\n");
-	NODELET_WARN_STREAM("Drain: RGB received approximately "<<rgb_counter.getCurrentSeq()<<" frames, total loss is approximately "<<rgb_counter.getLoss()<<"\n");
+	NODELET_WARN_STREAM("Drain: Depth received "<<depth_counter.getCurrentSeq()<<" frames, total loss estimate is "<<depth_counter.getLoss()<<" frames\n");
+	NODELET_WARN_STREAM("Drain: RGB received "<<rgb_counter.getCurrentSeq()<<" frames, total loss estimate is "<<rgb_counter.getLoss()<<" frames\n");
     }
 
 
