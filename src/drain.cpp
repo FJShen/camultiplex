@@ -84,8 +84,6 @@ namespace camera{
 	//save_image(msg, DEPTH);
 	cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
 
-	//save_image(cv_const_ptr, msg->header, DEPTH);
-	//boost::thread t{boost::bind(&drain::save_image, this, cv_const_ptr, msg->header, DEPTH)}; t.detach();
 	boost::async(boost::bind(&drain::save_image, this, cv_const_ptr, boost::ref(msg->header), DEPTH));
 	depth_counter.updateSeq(std::stoul(msg->header.frame_id));
 	
@@ -105,9 +103,6 @@ namespace camera{
 	//save_image(msg, RGB);
 	cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
 
-	//save_image(cv_const_ptr, msg->header, RGB);
-	
-	//boost::thread t{boost::bind(&drain::save_image, this, cv_const_ptr, msg->header, RGB)}; t.detach();
 	boost::async(boost::bind(&drain::save_image, this, cv_const_ptr, boost::ref(msg->header), RGB));
      	rgb_counter.updateSeq(std::stoul(msg->header.frame_id));
 	
@@ -135,8 +130,7 @@ namespace camera{
 	std::string time_of_start;
 	rh.getParam("rs_start_time", time_of_start);
 
-	//name the image with the timestamp obtained from the camera
-	//Attention! this is not time since epoch (1970) 
+	//name the image with the timestamp
 	unsigned int seconds = header.stamp.sec;
 	unsigned int nanoseconds = header.stamp.nsec;
 	std::stringstream ss;

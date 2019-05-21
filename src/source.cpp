@@ -7,7 +7,6 @@
 #include "sensor_msgs/image_encodings.h"
 #include <boost/filesystem.hpp>
 
-#include "camultiplex/TTest.h"
 
 namespace camera{
 
@@ -57,7 +56,6 @@ namespace camera{
 	    depth_pub[i] = rh.advertise<sensor_msgs::Image>(s_d+std::to_string(i), 8);
 	    rgb_pub[i] = rh.advertise<sensor_msgs::Image>(s_rgb+std::to_string(i), 8);
 	}
-	T_pub = rh.advertise<camultiplex::TTest>("my_test_msg", 4);
 
 	
 	//use timer to trigger callback
@@ -69,13 +67,6 @@ namespace camera{
     
 	
     void source::timerCallback(const ros::TimerEvent& event){
-
-	camultiplex::TTest t_msg;
-	t_msg.TString = "hello this is test string";
-	t_msg.value = seq;
-
-	T_pub.publish(t_msg);
-	
 
 	//determine which multiplex channel to use
 	uint32_t channel = seq % N;

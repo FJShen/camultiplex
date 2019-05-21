@@ -11,7 +11,7 @@ namespace helper{
 	else{
 	    previous_seq = current_seq;
 	    current_seq = value;
-	    loss += (current_seq - previous_seq -1);
+	    loss += (current_seq - previous_seq - 1);
 	    return;
 	}
     }
