@@ -99,19 +99,16 @@ namespace camera{
 	unsigned int width_color = color.get_width();
 	unsigned int height_color = color.get_height();
     
-	const uint8_t* pixel_ptr = (const uint8_t*)(depth.get_data());
-	const uint8_t* pixel_ptr_color = (const uint8_t*)(color.get_data());
+        uint8_t* pixel_ptr = (uint8_t*)(depth.get_data());
+        uint8_t* pixel_ptr_color = (uint8_t*)(color.get_data());
 
 	unsigned int pixel_amount = width*height;
 	unsigned int pixel_amount_color = width_color*height_color;
 
 	//as for the size of the vector, since depth image is of mono16 format, one pixel corresponds to 2 bytes; RGB is of rgb8 format, where one pixel is consisted of 3 channels, 1 byte for each channel leads to a total of 3 bytes/pixel.
-	std::vector<uint8_t> depth_image(2*pixel_amount);
-	std::vector<uint8_t> color_image(3*pixel_amount_color);
-
-	//copy the pixels to our vectors
-	memcpy(&depth_image[0], pixel_ptr, 2*pixel_amount*sizeof(uint8_t));
-	memcpy(&color_image[0], pixel_ptr_color, 3*pixel_amount_color*sizeof(uint8_t));
+	std::vector<uint8_t> depth_image(pixel_ptr, pixel_ptr + 2*pixel_amount);
+	std::vector<uint8_t> color_image(pixel_ptr_color, pixel_ptr_color + 3*pixel_amount_color);
+	
 
 	//prepare our message
         depth_msg.header.frame_id = std::to_string(seq);//this is the sequence number since start of the programme

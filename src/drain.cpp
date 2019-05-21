@@ -7,7 +7,9 @@
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/image_encodings.h"
 #include "cv_bridge/cv_bridge.h"
+#include <boost/thread.hpp>
 
+boost::mutex mutex;
 
 namespace camera{
 
@@ -67,7 +69,12 @@ namespace camera{
 			      << (msg->header.frame_id) << " from channel "
 			      << std::to_string(channel_num));
 
-	save_image(msg, DEPTH);
+	//save_image(msg, DEPTH);
+	cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
+
+	//save_image(cv_const_ptr, msg->header, DEPTH);
+	//boost::thread t{boost::bind(&drain::save_image, this, cv_const_ptr, msg->header, DEPTH)}; t.detach();
+	boost::async(boost::bind(&drain::save_image, this, cv_const_ptr, boost::ref(msg->header), DEPTH));
 	depth_counter.updateSeq(std::stoul(msg->header.frame_id));
 	
 	//print debug information
@@ -83,8 +90,14 @@ namespace camera{
 			      << (msg->header.frame_id) << " from channel "
 			      << std::to_string(channel_num));
 
-	save_image(msg, RGB);
-	rgb_counter.updateSeq(std::stoul(msg->header.frame_id));
+	//save_image(msg, RGB);
+	cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
+
+	//save_image(cv_const_ptr, msg->header, RGB);
+	
+	//boost::thread t{boost::bind(&drain::save_image, this, cv_const_ptr, msg->header, RGB)}; t.detach();
+	boost::async(boost::bind(&drain::save_image, this, cv_const_ptr, boost::ref(msg->header), RGB));
+     	rgb_counter.updateSeq(std::stoul(msg->header.frame_id));
 	
         NODELET_DEBUG_STREAM("saved rgb frame" << (msg->header.frame_id));
     }
@@ -97,15 +110,13 @@ namespace camera{
 	NODELET_WARN_STREAM("Drain: RGB received "<<rgb_counter.getCurrentSeq()<<" frames, total loss estimate is "<<rgb_counter.getLoss()<<" frames\n");
     }
 
-
     
     
-    bool drain::save_image(const sensor_msgs::Image::ConstPtr& msg, unsigned int channel){
+    void drain::save_image(cv_bridge::CvImageConstPtr cv_const_ptr, std_msgs::Header header, unsigned int channel){
 	
 	//there are two ways to convert from a Image message to openCV format
 	//one is to use cv_bridge::toCvCopy, and obtain a changeable copy of the original image
 	//the other way is to use cv_bridge::toCvCopy and obtain a reference to the same memory space that the ROS message holds, which forbids writing 
-	cv_bridge::CvImageConstPtr cv_const_ptr;
 	
 	ros::NodeHandle& rh = getMTNodeHandle();
 	
@@ -114,8 +125,8 @@ namespace camera{
 
 	//name the image with the timestamp obtained from the camera
 	//Attention! this is not time since epoch (1970) 
-	unsigned int seconds = msg->header.stamp.sec;
-	unsigned int nanoseconds = msg->header.stamp.nsec;
+	unsigned int seconds = header.stamp.sec;
+	unsigned int nanoseconds = header.stamp.nsec;
 	std::stringstream ss;
 	ss<<std::setw(10)<<std::setfill('0')<<seconds<<"."<<std::setw(9)<<std::setfill('0')<<nanoseconds;
 	
@@ -127,12 +138,12 @@ namespace camera{
 	    switch(channel){
 		
 	    case RGB:
-		cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
+		//cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
 		myStr = myStr + "/rgb_images/" + ss.str() + ".jpg";
 		break;
 		
 	    case DEPTH:
-		cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
+		//cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
 		myStr = myStr + "/depth_images/" + ss.str() + ".png";
 		break;
 		 
@@ -144,11 +155,12 @@ namespace camera{
 	catch (cv_bridge::Exception& e)
 	{
 	    NODELET_ERROR("cv_bridge exception: %s", e.what());
-	    return false;
+	    return;
 	}
 	
-	
+	//boost::lock_guard<boost::mutex> lock{mutex};
 	cv::imwrite(myStr, cv_const_ptr->image);
-	return true;
+	
+	return;
     }
 }

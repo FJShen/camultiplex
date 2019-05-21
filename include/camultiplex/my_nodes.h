@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "cv_bridge/cv_bridge.h"
 #include <opencv2/opencv.hpp>
+#include <boost/thread.hpp>
 
 /*
  *Define two classes: source and drain that act as our nodelets. Both inherits the base class "Nodelet::nodelet"
@@ -79,6 +80,7 @@ namespace camera{
 	
 	helper::counter depth_counter;
 	helper::counter rgb_counter;
+	
        
 	int N=3; //default number of channel multiplex diversity
 
@@ -88,7 +90,7 @@ namespace camera{
 
 	void timerCallback(const ros::TimerEvent& event);
 	
-	bool save_image(const sensor_msgs::Image::ConstPtr&, unsigned int);
+	void save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
     };
 
 
