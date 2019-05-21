@@ -80,6 +80,9 @@ namespace camera{
 	//determine which multiplex channel to use
 	uint32_t channel = seq % N;
 
+	unsigned int second;
+	unsigned int nanosecond ;
+
 	
 	sensor_msgs::Image depth_msg;
 	sensor_msgs::Image rgb_msg;
@@ -87,8 +90,15 @@ namespace camera{
 	double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
 
 	//we need to convert from millisecond to a [second-nanosecond] format 
-	unsigned int second = frame_timestamp/1000; //obtain the "second" part
-	unsigned int nanosecond = (frame_timestamp-1000*(double)(second))*1000000; //obtain the "nanosecond" part
+	second = frame_timestamp/1000; //obtain the "second" part
+	nanosecond = (frame_timestamp-1000*(double)(second))*1000000; //obtain the "nanosecond" part
+
+	//use chrono time since epoch
+	std::uint64_t nanosecond_64 = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	second = unsigned(nanosecond_64/1000000000);
+	nanosecond = unsigned(nanosecond_64-1000000000*(std::uint64_t)(second));
+	
+
 	
 	rs2::depth_frame depth = frames.get_depth_frame();
 	rs2::video_frame color = frames.get_color_frame();

@@ -37,6 +37,7 @@ namespace camera{
 	    rhp.deleteParam("diversity");
 	    ros::NodeHandle& rh = getMTNodeHandle();
 	    rh.deleteParam("rs_start_time");
+	    p.stop();
 	    NODELET_INFO("camera source node destrcuted\n");
 	};
 	
