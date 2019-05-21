@@ -8,6 +8,7 @@
 #include "sensor_msgs/image_encodings.h"
 #include "cv_bridge/cv_bridge.h"
 #include <boost/thread.hpp>
+#include <boost/filesystem.hpp>
 
 boost::mutex mutex;
 
@@ -42,6 +43,17 @@ namespace camera{
 	    depth_sub[i] = rh.subscribe<sensor_msgs::Image>(s_d + std::to_string(i), 8, boost::bind(&drain::drain_depth_callback, this, _1, i));
 	    rgb_sub[i] = rh.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8, boost::bind(&drain::drain_rgb_callback, this, _1, i));
 	}
+
+
+	std::uint64_t second_64 = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	timestamp_sec = std::to_string(second_64);
+
+	boost::filesystem::path P{"/media/nvidia/ExtremeSSD/" + timestamp_sec + "/rgb_images"};
+	boost::filesystem::create_directory(P);
+
+	//P = boost::filesystem::path("/media/nvidia/ExtremeSSD/" + timestamp_sec + "/depth_images");
+       	//boost::filesystem::create_directory(P);
+	
 
 	timer = rh.createTimer(ros::Duration(12), &drain::timerCallback, this);
 
