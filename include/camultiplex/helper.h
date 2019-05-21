@@ -2,14 +2,28 @@
 #define PIPELINE_NODELET_2__HELPER_
 
 #include <chrono>
+#include <iostream>
 
 namespace helper{
     
-    inline void print_time_stamp(std::string comment="timestamp"){
-	std::cout<< comment<<" "<<std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count()<<"\t";
+    void print_time_stamp(std::string comment="timestamp");
+    
+    std::string get_time_stamp_str();
+    
+ 
+    class counter{
+    public:
+    counter() : first_time(true), loss(0){ }
+	long int getLoss();
+	unsigned long getCurrentSeq();
+	void updateSeq(unsigned long);
+    private:
+	unsigned long current_seq;
+	unsigned long previous_seq;
+	long int loss;
+	bool first_time;
     };
-
-
+    
 }
-
+    
 #endif
