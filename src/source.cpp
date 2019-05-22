@@ -57,7 +57,6 @@ namespace camera{
 	    depth_pub[i] = rh.advertise<sensor_msgs::Image>(s_d+std::to_string(i), 8);
 	    rgb_pub[i] = rh.advertise<sensor_msgs::Image>(s_rgb+std::to_string(i), 8);
 	}
-	T_pub = rh.advertise<camultiplex::TTest>("my_test_msg", 4);
 
 	
 	//use timer to trigger callback

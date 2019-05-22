@@ -81,6 +81,8 @@ namespace camera{
 	
 	helper::counter depth_counter;
 	helper::counter rgb_counter;
+
+	std::string timestamp_sec;
 	
        
 	int N=3; //default number of channel multiplex diversity

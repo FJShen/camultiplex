@@ -8,6 +8,7 @@
 #include "sensor_msgs/image_encodings.h"
 #include "cv_bridge/cv_bridge.h"
 #include <boost/thread.hpp>
+#include <boost/filesystem.hpp>
 
 boost::mutex mutex;
 
@@ -43,6 +44,17 @@ namespace camera{
 	    rgb_sub[i] = rh.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8, boost::bind(&drain::drain_rgb_callback, this, _1, i));
 	}
 
+
+	std::uint64_t second_64 = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	timestamp_sec = std::to_string(second_64);
+
+	boost::filesystem::path P{"/media/nvidia/ExtremeSSD/" + timestamp_sec + "/rgb_images"};
+	boost::filesystem::create_directory(P);
+
+	//P = boost::filesystem::path("/media/nvidia/ExtremeSSD/" + timestamp_sec + "/depth_images");
+       	//boost::filesystem::create_directory(P);
+	
+
 	timer = rh.createTimer(ros::Duration(12), &drain::timerCallback, this);
 
 	NODELET_INFO("Camera drain node onInit called\n");
@@ -72,11 +84,11 @@ namespace camera{
 	//save_image(msg, DEPTH);
 	cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
 
-	//save_image(cv_const_ptr, msg->header, DEPTH);
-	//boost::thread t{boost::bind(&drain::save_image, this, cv_const_ptr, msg->header, DEPTH)}; t.detach();
 	boost::async(boost::bind(&drain::save_image, this, cv_const_ptr, boost::ref(msg->header), DEPTH));
 	depth_counter.updateSeq(std::stoul(msg->header.frame_id));
 	
+	//print debug information
+	NODELET_DEBUG_STREAM("saved depth frame" << (msg->header.frame_id));
 	//print debug information
 	NODELET_DEBUG_STREAM("saved depth frame" << (msg->header.frame_id));
     }
@@ -93,10 +105,10 @@ namespace camera{
 	//save_image(msg, RGB);
 	cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
 
-	//save_image(cv_const_ptr, msg->header, RGB);
-	
-	//boost::thread t{boost::bind(&drain::save_image, this, cv_const_ptr, msg->header, RGB)}; t.detach();
 	boost::async(boost::bind(&drain::save_image, this, cv_const_ptr, boost::ref(msg->header), RGB));
+     	rgb_counter.updateSeq(std::stoul(msg->header.frame_id));
+	
+        NODELET_DEBUG_STREAM("saved rgb frame" << (msg->header.frame_id));
      	rgb_counter.updateSeq(std::stoul(msg->header.frame_id));
 	
         NODELET_DEBUG_STREAM("saved rgb frame" << (msg->header.frame_id));
@@ -119,12 +131,17 @@ namespace camera{
 	//the other way is to use cv_bridge::toCvCopy and obtain a reference to the same memory space that the ROS message holds, which forbids writing 
 	
 	ros::NodeHandle& rh = getMTNodeHandle();
-	
 	std::string time_of_start;
 	rh.getParam("rs_start_time", time_of_start);
 
 	//name the image with the timestamp obtained from the camera
 	//Attention! this is not time since epoch (1970) 
+	unsigned int seconds = header.stamp.sec;
+	unsigned int nanoseconds = header.stamp.nsec;
+	std::stringstream ss;
+	ss<<std::setw(10)<<std::setfill('0')<<seconds<<"."<<std::setw(9)<<std::setfill('0')<<nanoseconds;
+	
+	//name the image with the timestamp
 	unsigned int seconds = header.stamp.sec;
 	unsigned int nanoseconds = header.stamp.nsec;
 	std::stringstream ss;
