@@ -22,6 +22,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS
 	thread
+	filesystem
+	chrono
 )
 
 
@@ -126,6 +128,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -160,7 +163,7 @@ include_directories(
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(camultiplex
-   ${catkin_LIBRARIES} realsense2 ${OpenCV_LIBS}
+   ${catkin_LIBRARIES} realsense2 ${OpenCV_LIBS} ${Boost_LIBRARIES}
  )
  
 
