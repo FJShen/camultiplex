@@ -35,7 +35,7 @@ namespace camera{
 
 
 	std::uint64_t second_64 = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	timestamp_sec = std::to_string(second_64);
+	std::string timestamp_sec = std::to_string(second_64);
 
 	boost::filesystem::path P{"/media/nvidia/ExtremeSSD/" + timestamp_sec + "/rgb_images"};
 	boost::filesystem::create_directory(P);
