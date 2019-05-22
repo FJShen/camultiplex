@@ -26,11 +26,40 @@ namespace camera{
 	    .create_directories(std::string("/media/nvidia/ExtremeSSD"));
 	
 	timer = rh.createTimer(ros::Duration(12), &drain::timerCallback, this);
+	rgb_sub = new (std::nothrow) ros::Subscriber[N];
+		
+	if((!depth_sub) || (!rgb_sub)){
+	    NODELET_FATAL("Bad memory allocation for subscribers\n");
+	}
+
+
+
+	std::uint64_t second_64 = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	timestamp_sec = std::to_string(second_64);
+
+	boost::filesystem::path P{"/media/nvidia/ExtremeSSD/" + timestamp_sec + "/rgb_images"};
+	boost::filesystem::create_directory(P);
+
+	//P = boost::filesystem::path("/media/nvidia/ExtremeSSD/" + timestamp_sec + "/depth_images");
+       	//boost::filesystem::create_directory(P);
+	
+
+	timer = rh.createTimer(ros::Duration(12), &drain::timerCallback, this);
 
 	NODELET_INFO("Camera drain node onInit called\n");
     }
 
 
+    drain::~drain(){
+	delete[] depth_sub;
+	delete[] rgb_sub;
+	ros::NodeHandle& rhp = getMTPrivateNodeHandle();
+	rhp.deleteParam("diversity");   
+	
+	NODELET_INFO("camera drain node destructed\n");
+    }
+
+    
     
     drain::~drain(){
 	delete[] depth_sub;
@@ -119,6 +148,18 @@ namespace camera{
 	
 	std::string myStr;
 		
+	std::string time_of_start;
+	rh.getParam("rs_start_time", time_of_start);
+
+	//name the image with the timestamp
+	unsigned int seconds = header.stamp.sec;
+	unsigned int nanoseconds = header.stamp.nsec;
+	std::stringstream ss;
+	ss<<std::setw(10)<<std::setfill('0')<<seconds<<"."<<std::setw(9)<<std::setfill('0')<<nanoseconds;
+	
+	std::string myStr = "/media/nvidia/ExtremeSSD";
+	
+	//since we are merely saving the image, we do not write to the image. So we only need a reference to the original image
 	try
 	{
 	    switch(channel){
@@ -143,7 +184,7 @@ namespace camera{
 	    NODELET_ERROR("cv_bridge exception: %s", e.what());
 	    return *this;
 	}
-
+	
 	
 	cv::imwrite(myStr, cv_const_ptr->image);
 	
