@@ -1,6 +1,6 @@
 <launch>
   <node pkg="nodelet" type="nodelet" name="source"
 	args="load camultiplex/source nodelet_manager">
-    <!--<param name="diversity" type="int" value="2" />-->
+    <param name="diversity" type="int" value="2" />
   </node>
 </launch>
