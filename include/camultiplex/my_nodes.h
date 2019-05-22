@@ -9,8 +9,6 @@
 #include "sensor_msgs/image_encodings.h"
 #include <stdio.h>
 #include "cv_bridge/cv_bridge.h"
-#include <opencv2/opencv.hpp>
-#include <boost/thread.hpp>
 
 /*
  *Define two classes: source and drain that act as our nodelets. Both inherits the base class "Nodelet::nodelet"
@@ -33,11 +31,15 @@ namespace camera{
 	~source(){
 	    delete[] depth_pub;
 	    delete[] rgb_pub;
+	    
 	    ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 	    rhp.deleteParam("diversity");
+	    
 	    ros::NodeHandle& rh = getMTNodeHandle();
 	    rh.deleteParam("rs_start_time");
+	    
 	    p.stop();
+	    
 	    NODELET_INFO("camera source node destrcuted\n");
 	};
 	
@@ -46,7 +48,6 @@ namespace camera{
     private:
 	ros::Publisher* depth_pub;
 	ros::Publisher* rgb_pub;
-	ros::Publisher T_pub;
 	ros::Timer timer;
 
 	int N = 2; //this is the default number of channel diversity 
@@ -59,6 +60,10 @@ namespace camera{
 	
 	//callback function that transmits frames to the topics
 	void timerCallback(const ros::TimerEvent& event);
+
+	source& define_publishers();
+	source& init_camera();
+	source& setParamTimeOfStart();
     };
 
 
@@ -82,7 +87,7 @@ namespace camera{
 	helper::counter depth_counter;
 	helper::counter rgb_counter;
 
-	std::string timestamp_sec;
+	std::string folder_path;
 	
        
 	int N=3; //default number of channel multiplex diversity
@@ -90,10 +95,11 @@ namespace camera{
 	//ConstPtr& is necessary for nodelets to work
 	void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int);
 	void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int);
-
 	void timerCallback(const ros::TimerEvent& event);
-	
-	void save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
+
+	drain& define_subscribers();
+	drain& create_directories(std::string base_path);
+	drain& save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
     };
 
 

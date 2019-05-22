@@ -7,7 +7,6 @@
 #include "sensor_msgs/image_encodings.h"
 #include <boost/filesystem.hpp>
 
-#include "camultiplex/TTest.h"
 
 namespace camera{
 
@@ -18,46 +17,10 @@ namespace camera{
 	ros::NodeHandle& rh = getMTNodeHandle();
 	ros::NodeHandle& rph = getMTPrivateNodeHandle();
 
-	if(!rph.getParam("diversity", N)){
-	    NODELET_WARN_STREAM_NAMED("camera source", "No parameter for source channel diversity specified, will use default: "<< N);
-	}
-	else{
-	    NODELET_INFO_STREAM_NAMED("camera source", "Number of source channel diversity: "<<N);
-	}
-
-	depth_pub = new (std::nothrow) ros::Publisher[N];
-	rgb_pub = new (std::nothrow) ros::Publisher[N];
-		
-	if((!depth_pub) || (!rgb_pub)){
-	    NODELET_FATAL("Bad memory allocation for publishers\n");
-	}
-
-
-
-	//set a parameter that describes the time stamp of starting
-	std::string time_of_start = helper::get_time_stamp_str();
-	rh.setParam("rs_start_time", time_of_start);	
+	this->define_publishers()
+	    .init_camera()
+	    .setParamTimeOfStart();
 	
-	
-	NODELET_INFO_STREAM("Time-of-start set up as parameter \"start_time\", value is "<<time_of_start<<". This is used as the unique identifier for the folder created during this recording.");
-
-	
-	//configure and initialize the camera
-	//according to Intel RS documentation, the max FPS of rgb stream is 60 
-    	c.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, FPS);
-    	c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS>60)?60:FPS);
-    	p.start(c);
-	NODELET_INFO("device started!");
-
-	
-	//define publishers
-	const std::string s_d("depth");
-	const std::string s_rgb("RGB");
-	for(int i=0; i<N; i++){
-	    depth_pub[i] = rh.advertise<sensor_msgs::Image>(s_d+std::to_string(i), 8);
-	    rgb_pub[i] = rh.advertise<sensor_msgs::Image>(s_rgb+std::to_string(i), 8);
-	}
-
 	
 	//use timer to trigger callback
     	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
@@ -69,22 +32,17 @@ namespace camera{
 	
     void source::timerCallback(const ros::TimerEvent& event){
 
-	camultiplex::TTest t_msg;
-	t_msg.TString = "hello this is test string";
-	t_msg.value = seq;
-
-	T_pub.publish(t_msg);
-	
-
+	NODELET_DEBUG_NAMED("source", "TIMEER CALLBACK CALLED");
+       
 	//determine which multiplex channel to use
 	uint32_t channel = seq % N;
 
 	unsigned int second;
 	unsigned int nanosecond ;
-
 	
 	sensor_msgs::Image depth_msg;
 	sensor_msgs::Image rgb_msg;
+	
 	rs2::frameset frames = p.wait_for_frames();
 	double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
 
@@ -97,7 +55,6 @@ namespace camera{
 	second = unsigned(nanosecond_64/1000000000);
 	nanosecond = unsigned(nanosecond_64-1000000000*(std::uint64_t)(second));
 	
-
 	
 	rs2::depth_frame depth = frames.get_depth_frame();
 	rs2::video_frame color = frames.get_color_frame();
@@ -145,4 +102,67 @@ namespace camera{
 	NODELET_DEBUG_STREAM("Both streams published to "<<channel<<"\n");
 	seq++;
     }
+
+
+
+    source& source::define_publishers(){
+	
+	ros::NodeHandle& rh = getMTNodeHandle();
+	ros::NodeHandle& rph = getMTPrivateNodeHandle();
+
+	if(!rph.getParam("diversity", N)){
+	    NODELET_WARN_STREAM_NAMED("camera source", "No parameter for source channel diversity specified, will use default: "<< N);
+	}
+	else{
+	    NODELET_INFO_STREAM_NAMED("camera source", "Number of source channel diversity: "<<N);
+	}
+
+	depth_pub = new (std::nothrow) ros::Publisher[N];
+	rgb_pub = new (std::nothrow) ros::Publisher[N];
+		
+	if((!depth_pub) || (!rgb_pub)){
+	    NODELET_FATAL("Bad memory allocation for publishers\n");
+	}
+
+	//define publishers
+	const std::string s_d("depth");
+	const std::string s_rgb("RGB");
+	for(int i=0; i<N; i++){
+	    NODELET_DEBUG_STREAM_NAMED("source", "creating #" << i <<" publisher");
+	    depth_pub[i] = rh.advertise<sensor_msgs::Image>(s_d+std::to_string(i), 8);
+	    rgb_pub[i] = rh.advertise<sensor_msgs::Image>(s_rgb+std::to_string(i), 8);
+	}
+
+	NODELET_INFO("Publishers defined");
+
+	return *this;
+    }
+
+
+
+    source& source::init_camera(){
+
+	//configure and initialize the camera
+	//according to Intel RS documentation, the max FPS of rgb stream is 60 
+    	c.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, FPS);
+    	c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS>60)?60:FPS);
+    	p.start(c);
+	NODELET_INFO("device started!");
+
+	return *this;
+    }
+
+
+    source& source::setParamTimeOfStart(){
+//set a parameter that describes the time stamp of starting in microseconds
+	ros::NodeHandle& rh = getMTNodeHandle();
+
+	std::string time_of_start = helper::get_time_stamp_str();
+	rh.setParam("rs_start_time", time_of_start);	
+		
+	NODELET_INFO_STREAM("Time-of-start set up as parameter \"start_time\", value is "<<time_of_start<<". This is used as the unique identifier for the folder created during this recording.");
+	
+	return *this;
+    }
+
 }
