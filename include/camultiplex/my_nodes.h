@@ -22,6 +22,9 @@
 
 namespace camera{
 
+const std::set<int> Legal_FPS = {15, 30, 60, 90};
+const int Default_FPS = 60;
+
     class source : public nodelet::Nodelet{
     public:
 	
@@ -53,7 +56,7 @@ namespace camera{
 	ros::Timer timer;
 
 	int N = 2; //this is the default number of channel diversity 
-	float FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
+	int FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
 	uint32_t seq = 0;
 	
 	//rs2::frameset frames;

@@ -20,24 +20,6 @@ namespace camera{
 	this->define_publishers()
 	    .init_camera()
 	    .setParamTimeOfStart();
-	depth_pub = new (std::nothrow) ros::Publisher[N];
-	rgb_pub = new (std::nothrow) ros::Publisher[N];
-		
-	if((!depth_pub) || (!rgb_pub)){
-	    NODELET_FATAL("Bad memory allocation for publishers\n");
-	}
-
-
-
-	//set a parameter that describes the time stamp of starting
-	std::string time_of_start = helper::get_time_stamp_str();
-	rh.setParam("rs_start_time", time_of_start);	
-	
-	
-	NODELET_INFO_STREAM("Time-of-start set up as parameter \"start_time\", value is "<<time_of_start<<". This is used as the unique identifier for the folder created during this recording.");
-
-	NODELET_INFO("device started!");
-	
 	
 	//use timer to trigger callback
     	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
@@ -160,6 +142,20 @@ namespace camera{
 
 
     source& source::init_camera(){
+
+	ros::NodeHandle& rph = getMTPrivateNodeHandle();
+	
+	if(!rph.getParam("FPS", FPS)){
+	    NODELET_WARN_STREAM_NAMED("camera source", "No parameter for source FPS specified, will use default value "<<FPS);
+	}
+	else{
+	    NODELET_INFO_STREAM_NAMED("camera source", "Source camera frame-per-second set to "<<FPS);
+	}
+
+	if(camera::Legal_FPS.find(FPS)==camera::Legal_FPS.end()){
+	    NODELET_WARN_STREAM_NAMED("camera source", "Inserted illegal FPS, will use default FPS= "<< (FPS = camera::Default_FPS));
+	}
+	
 
 	//configure and initialize the camera
 	//according to Intel RS documentation, the max FPS of rgb stream is 60 
