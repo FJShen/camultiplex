@@ -2,5 +2,6 @@
   <node pkg="nodelet" type="nodelet" name="drain"
 	args="load camultiplex/drain nodelet_manager">
     <param name="diversity" type="int" value="2" />    
+    <param name="base_path" type="string" value="/media/nvidia/ExtremeSSD" />
   </node>
 </launch>

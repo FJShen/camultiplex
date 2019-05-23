@@ -23,7 +23,7 @@ namespace camera{
 	ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 	
 	this->define_subscribers()
-	    .create_directories(std::string("/media/nvidia/ExtremeSSD"));
+	    .create_directories();
 	
 	timer = rh.createTimer(ros::Duration(12), &drain::timerCallback, this);
 
@@ -36,7 +36,7 @@ namespace camera{
 	delete[] rgb_sub;
 	ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 	rhp.deleteParam("diversity");   
-	
+	rhp.deleteParam("base_path");
 	NODELET_INFO("camera drain node destructed\n");
     }
 
@@ -146,7 +146,16 @@ namespace camera{
     
     
 
-    drain& drain::create_directories(std::string base_path){
+    drain& drain::create_directories(){
+
+	ros::NodeHandle& rph = getMTPrivateNodeHandle();
+       	
+	if(!rph.getParam("base_path", base_path)){
+	    NODELET_WARN_STREAM_NAMED("drain", "No parameter for image base path specified, will use default: "<< base_path);
+	}
+	else{
+	    NODELET_INFO_STREAM_NAMED("drain", "Image base path: "<<base_path);
+	}
 	
 	std::time_t t = std::time(nullptr);
 	std::tm* local_time = std::localtime(&t);

@@ -38,6 +38,7 @@ const int Default_FPS = 60;
 	    
 	    ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 	    rhp.deleteParam("diversity");
+	    rhp.deleteParam("FPS");
 	    
 	    ros::NodeHandle& rh = getMTNodeHandle();
 	    rh.deleteParam("rs_start_time");
@@ -92,7 +93,9 @@ const int Default_FPS = 60;
 	helper::counter depth_counter;
 	helper::counter rgb_counter;
 
-	std::string folder_path;
+	std::string base_path = std::string("/media/nvidia/ExtremeSSD"); //this is the path where the folder will be created
+	std::string folder_path; //this is the path of the created folder
+
 	
        
 	int N=3; //default number of channel multiplex diversity
@@ -103,7 +106,7 @@ const int Default_FPS = 60;
 	void timerCallback(const ros::TimerEvent& event);
 
 	drain& define_subscribers();
-	drain& create_directories(std::string base_path);
+	drain& create_directories();
 	drain& save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
     };
 
