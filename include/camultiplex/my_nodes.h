@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "cv_bridge/cv_bridge.h"
 #include <boost/thread.hpp>
+#include <vector>
 
 /*
  *Define two classes: source and drain that act as our nodelets. Both inherits the base class "Nodelet::nodelet"
@@ -55,6 +56,7 @@ const int Default_FPS = 60;
 	ros::Publisher* rgb_pub;
 	ros::Publisher T_pub;
 	ros::Timer timer;
+    std::vector<rs2::align> align_to_color;
 
 	int N = 2; //this is the default number of channel diversity 
 	int FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future

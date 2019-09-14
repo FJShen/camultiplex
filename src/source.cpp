@@ -6,6 +6,7 @@
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/image_encodings.h"
 #include <boost/filesystem.hpp>
+#include <vector>
 
 
 namespace camera{
@@ -20,9 +21,14 @@ namespace camera{
 	this->define_publishers()
 	    .init_camera()
 	    .setParamTimeOfStart();
+
+	for(int i=0; i<N; i++){
+	    align_to_color.emplace_back(RS2_STREAM_COLOR);
+	}
 	
 	//use timer to trigger callback
-    	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
+	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
+
 	NODELET_INFO("Camera source node onInit called\n");
     }
 
@@ -42,9 +48,14 @@ namespace camera{
 	
 	sensor_msgs::Image depth_msg;
 	sensor_msgs::Image rgb_msg;
-	
-	rs2::frameset frames = p.wait_for_frames();
-	double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
+
+
+    rs2::frameset frames = p.wait_for_frames();
+    //NODELET_INFO(".");
+    //
+    frames = align_to_color[channel].process(frames);
+
+    double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
 
 	//we need to convert from millisecond to a [second-nanosecond] format 
 	second = frame_timestamp/1000; //obtain the "second" part
