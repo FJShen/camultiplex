@@ -139,7 +139,7 @@ include_directories(
    src/export_so_library.cpp
    src/helper.cpp
    src/counter.cpp
-         )
+ )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
