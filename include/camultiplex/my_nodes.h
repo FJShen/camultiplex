@@ -28,7 +28,8 @@ const int Default_FPS = 60;
     class source : public nodelet::Nodelet{
     public:
 	
-	source(){
+	source():align_to_color(RS2_STREAM_COLOR)
+	{
 	    NODELET_INFO("camera source node constructed\n");
 	};
 	
@@ -63,6 +64,7 @@ const int Default_FPS = 60;
 	//rs2::frameset frames;
 	rs2::pipeline p;
 	rs2::config c;
+	rs2::align align_to_color;
 	
 	//callback function that transmits frames to the topics
 	void timerCallback(const ros::TimerEvent& event);
