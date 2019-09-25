@@ -42,8 +42,14 @@ namespace camera{
 	
 	sensor_msgs::Image depth_msg;
 	sensor_msgs::Image rgb_msg;
-	
-	rs2::frameset frames = p.wait_for_frames();
+
+
+
+
+	rs2::frameset frames = fq.wait_for_frame();
+
+	frames = align_to_color.process(frames);
+
 	double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
 
 	//we need to convert from millisecond to a [second-nanosecond] format 
@@ -55,7 +61,6 @@ namespace camera{
 	second = unsigned(nanosecond_64/1000000000);
 	nanosecond = unsigned(nanosecond_64-1000000000*(std::uint64_t)(second));
 	
-
 	
 	rs2::depth_frame depth = frames.get_depth_frame();
 	rs2::video_frame color = frames.get_color_frame();
@@ -163,6 +168,15 @@ namespace camera{
     	c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS>60)?60:FPS);
     	p.start(c);
 	NODELET_INFO("device started!");
+
+	boost::thread t([&](){
+		while(1){
+		    rs2::frameset frames = p.wait_for_frames();
+
+		    fq.enqueue(frames);
+		}
+	    });
+	t.detach();
 
 	return *this;
     }
