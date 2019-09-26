@@ -20,6 +20,14 @@ namespace camera{
 	this->define_publishers()
 	    .init_camera()
 	    .setParamTimeOfStart();
+
+	queue_thread = boost::thread([&](){
+	    while(1){
+	        rs2::frameset fs = p.wait_for_frames();
+	        frameset_queue.enqueue(std::move(fs));
+	        boost::this_thread::interruption_point();
+	    }
+	});
 	
 	//use timer to trigger callback
 	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
@@ -43,7 +51,8 @@ namespace camera{
 	sensor_msgs::Image depth_msg;
 	sensor_msgs::Image rgb_msg;
 	
-	rs2::frameset frames = p.wait_for_frames();
+	//rs2::frameset frames = p.wait_for_frames();
+	rs2::frameset frames = frameset_queue.wait_for_frame();
 	double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
 
 	//we need to convert from millisecond to a [second-nanosecond] format 

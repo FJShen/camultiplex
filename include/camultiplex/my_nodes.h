@@ -42,7 +42,13 @@ const int Default_FPS = 60;
 	    
 	    ros::NodeHandle& rh = getMTNodeHandle();
 	    rh.deleteParam("rs_start_time");
-	    
+
+	    queue_thread.interrupt();
+
+	    NODELET_INFO("waiting for queue thread to join...");
+	    queue_thread.join();
+        NODELET_INFO("... queue thread joined");
+
 	    p.stop();
 	    
 	    NODELET_INFO("camera source node destrcuted\n");
@@ -63,6 +69,11 @@ const int Default_FPS = 60;
 	//rs2::frameset frames;
 	rs2::pipeline p;
 	rs2::config c;
+	rs2::frame_queue frameset_queue;
+
+	boost::mutex queue_mutex;
+
+	boost::thread queue_thread;
 	
 	//callback function that transmits frames to the topics
 	void timerCallback(const ros::TimerEvent& event);
