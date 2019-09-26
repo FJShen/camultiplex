@@ -22,10 +22,12 @@ namespace camera{
 	    .setParamTimeOfStart();
 
 	queue_thread = boost::thread([&](){
-	    while(1){
-	        rs2::frameset fs = p.wait_for_frames();
-	        frameset_queue.enqueue(std::move(fs));
-	        boost::this_thread::interruption_point();
+        while(1) {
+            boost::this_thread::interruption_point();
+            rs2::frameset fs;
+            if (frameset_queue.poll_for_frame(&fs)) {
+                frameset_queue.enqueue(std::move(fs));
+            }
 	    }
 	});
 	
@@ -39,14 +41,10 @@ namespace camera{
 	
     void source::timerCallback(const ros::TimerEvent& event){
 
-	NODELET_DEBUG_NAMED("source", "TIMEER CALLBACK CALLED");
-       
+	NODELET_DEBUG_NAMED("source", "TIMER CALLBACK CALLED");
+
 	//determine which multiplex channel to use
 	uint32_t channel = seq % N;
-
-	unsigned int second;
-	unsigned int nanosecond ;
-
 	
 	sensor_msgs::Image depth_msg;
 	sensor_msgs::Image rgb_msg;
@@ -56,14 +54,15 @@ namespace camera{
 	double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
 
 	//we need to convert from millisecond to a [second-nanosecond] format 
-	second = frame_timestamp/1000; //obtain the "second" part
-	nanosecond = (frame_timestamp-1000*(double)(second))*1000000; //obtain the "nanosecond" part
+	unsigned int second;
+	unsigned int nanosecond;
+//	nanosecond = (frame_timestamp-1000*(double)(second))*1000000; //obtain the "nanosecond" part
+//	second = frame_timestamp/1000; //obtain the "second" part
 
 	//use chrono time since epoch
 	std::uint64_t nanosecond_64 = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	second = unsigned(nanosecond_64/1000000000);
 	nanosecond = unsigned(nanosecond_64-1000000000*(std::uint64_t)(second));
-	
 
 	
 	rs2::depth_frame depth = frames.get_depth_frame();
@@ -75,8 +74,8 @@ namespace camera{
 	unsigned int width_color = color.get_width();
 	unsigned int height_color = color.get_height();
     
-        uint8_t* pixel_ptr = (uint8_t*)(depth.get_data());
-        uint8_t* pixel_ptr_color = (uint8_t*)(color.get_data());
+	uint8_t* pixel_ptr = (uint8_t*)(depth.get_data());
+	uint8_t* pixel_ptr_color = (uint8_t*)(color.get_data());
 
 	unsigned int pixel_amount = width*height;
 	unsigned int pixel_amount_color = width_color*height_color;
@@ -87,7 +86,7 @@ namespace camera{
 	
 
 	//prepare our message
-        depth_msg.header.frame_id = std::to_string(seq);//this is the sequence number since start of the programme
+    depth_msg.header.frame_id = std::to_string(seq);//this is the sequence number since start of the programme
 	depth_msg.header.stamp.sec = second ;
 	depth_msg.header.stamp.nsec = nanosecond;
 //	depth_msg.data = depth_image;
