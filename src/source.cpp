@@ -22,12 +22,18 @@ namespace camera{
 	    .setParamTimeOfStart();
 
 	queue_thread = boost::thread([&](){
-        while(1) {
-            boost::this_thread::interruption_point();
-            rs2::frameset fs;
-            if (frameset_queue.poll_for_frame(&fs)) {
-                frameset_queue.enqueue(std::move(fs));
+	    try {
+            while (1) {
+                boost::this_thread::interruption_point();
+                rs2::frameset fs;
+                if (frameset_queue.poll_for_frame(&fs)) {
+                    boost::unique_lock<boost::mutex> queue_lock(queue_mutex);
+                    frameset_queue.enqueue(std::move(fs));
+                }
             }
+        }
+	    catch(boost::thread_interrupted&){
+	        return;
 	    }
 	});
 	
