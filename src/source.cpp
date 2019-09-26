@@ -26,7 +26,7 @@ namespace camera{
             while (1) {
                 boost::this_thread::interruption_point();
                 rs2::frameset fs;
-                if (frameset_queue.poll_for_frame(&fs)) {
+                if (p.poll_for_frames(&fs)) {
                     boost::unique_lock<boost::mutex> queue_lock(queue_mutex);
                     frameset_queue.enqueue(std::move(fs));
                 }
