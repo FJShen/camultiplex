@@ -72,6 +72,7 @@ const int Default_FPS = 60;
 	rs2::frame_queue frameset_queue;
 
 	boost::mutex queue_mutex;
+	boost::mutex seq_mutex;
 
 	boost::thread queue_thread;
 	

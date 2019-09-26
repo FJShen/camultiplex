@@ -22,20 +22,19 @@ namespace camera{
 	    .setParamTimeOfStart();
 
 	queue_thread = boost::thread([&](){
-	    try {
-            while (1) {
-                boost::this_thread::interruption_point();
-                rs2::frameset fs;
-                if (p.poll_for_frames(&fs)) {
-                    boost::unique_lock<boost::mutex> queue_lock(queue_mutex);
-                    frameset_queue.enqueue(std::move(fs));
-                }
-            }
-        }
-	    catch(boost::thread_interrupted&){
-	        return;
-	    }
-	});
+		try {
+		    while (1) {
+			boost::this_thread::interruption_point();
+			rs2::frameset fs;
+		        fs = p.wait_for_frames();
+			boost::unique_lock<boost::mutex> queue_lock(queue_mutex);
+			frameset_queue.enqueue(std::move(fs));
+		    }
+		}
+		catch(boost::thread_interrupted&){
+		    return;
+		}
+	    });
 	
 	//use timer to trigger callback
 	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
@@ -50,7 +49,9 @@ namespace camera{
 	NODELET_DEBUG_NAMED("source", "TIMER CALLBACK CALLED");
 
 	//determine which multiplex channel to use
+	boost::unique_lock<boost::mutex> seq_lock(seq_mutex);
 	uint32_t channel = seq % N;
+	seq_lock.unlock();
 	
 	sensor_msgs::Image depth_msg;
 	sensor_msgs::Image rgb_msg;
@@ -115,9 +116,12 @@ namespace camera{
 	depth_pub[channel].publish(depth_msg);
 	rgb_pub[channel].publish(rgb_msg);
 
+	seq_lock.lock();
+	++seq;
+	seq_lock.unlock();
+
 	
 	NODELET_DEBUG_STREAM("Both streams published to "<<channel<<"\n");
-	seq++;
     }
 
 
