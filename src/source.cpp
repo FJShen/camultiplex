@@ -22,7 +22,7 @@ namespace camera{
 	    .setParamTimeOfStart();
 	
 	//use timer to trigger callback
-    	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
+	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
 	NODELET_INFO("Camera source node onInit called\n");
     }
 
@@ -73,15 +73,16 @@ namespace camera{
 	unsigned int pixel_amount_color = width_color*height_color;
 
 	//as for the size of the vector, since depth image is of mono16 format, one pixel corresponds to 2 bytes; RGB is of rgb8 format, where one pixel is consisted of 3 channels, 1 byte for each channel leads to a total of 3 bytes/pixel.
-	std::vector<uint8_t> depth_image(pixel_ptr, pixel_ptr + 2*pixel_amount);
-	std::vector<uint8_t> color_image(pixel_ptr_color, pixel_ptr_color + 3*pixel_amount_color);
+//	std::vector<uint8_t> depth_image(pixel_ptr, pixel_ptr + 2*pixel_amount);
+//	std::vector<uint8_t> color_image(pixel_ptr_color, pixel_ptr_color + 3*pixel_amount_color);
 	
 
 	//prepare our message
         depth_msg.header.frame_id = std::to_string(seq);//this is the sequence number since start of the programme
 	depth_msg.header.stamp.sec = second ;
 	depth_msg.header.stamp.nsec = nanosecond;
-	depth_msg.data = depth_image;
+//	depth_msg.data = depth_image;
+	depth_msg.data = std::vector<uint8_t>(pixel_ptr, pixel_ptr + 2*pixel_amount);
 	depth_msg.height = height;
 	depth_msg.width = width;
 	depth_msg.encoding = sensor_msgs::image_encodings::MONO16;
@@ -90,7 +91,8 @@ namespace camera{
 	rgb_msg.header.frame_id = std::to_string(seq);
 	rgb_msg.header.stamp.sec = second ;
 	rgb_msg.header.stamp.nsec = nanosecond ;
-	rgb_msg.data = color_image;
+//	rgb_msg.data = color_image;
+	rgb_msg.data = std::vector<uint8_t>(pixel_ptr_color, pixel_ptr_color + 3*pixel_amount_color);
 	rgb_msg.height = height_color;
 	rgb_msg.width = width_color;
 	rgb_msg.encoding = sensor_msgs::image_encodings::RGB8;
