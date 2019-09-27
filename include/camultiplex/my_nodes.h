@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "cv_bridge/cv_bridge.h"
 #include <boost/thread.hpp>
+#include <boost/chrono.hpp>
 
 /*
  *Define two classes: source and drain that act as our nodelets. Both inherits the base class "Nodelet::nodelet"
@@ -35,6 +36,28 @@ const int Default_FPS = 60;
 	~source(){
 	    delete[] depth_pub;
 	    delete[] rgb_pub;
+
+	    NODELET_INFO("Trying to terminate queue_thread");
+	    if(queue_thread.get_id() != boost::thread::id()){
+            queue_thread.interrupt();
+            if(queue_thread.try_join_for(boost::chrono::milliseconds(10))){
+                NODELET_ERROR("failed to join queue_thread");
+            }
+        }
+
+        NODELET_INFO("Trying to terminate alignment_threads");
+        for(auto& x : alignment_threads){
+            if(x.get_id() != boost::thread::id()){
+                x.interrupt();
+            }
+        }
+        for(auto& x : alignment_threads) {
+            if (x.try_join_for(boost::chrono::milliseconds(10))) {
+                NODELET_ERROR("failed to join an alignment_thread");
+            }
+        }
+
+
 	    
 	    ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 	    rhp.deleteParam("diversity");
@@ -42,12 +65,6 @@ const int Default_FPS = 60;
 	    
 	    ros::NodeHandle& rh = getMTNodeHandle();
 	    rh.deleteParam("rs_start_time");
-
-	    queue_thread.interrupt();
-
-	    NODELET_INFO("waiting for queue thread to join...");
-	    queue_thread.join();
-        NODELET_INFO("... queue thread joined");
 
 	    p.stop();
 	    
@@ -75,9 +92,12 @@ const int Default_FPS = 60;
 	boost::mutex seq_mutex;
 
 	boost::thread queue_thread;
+	std::vector<boost::thread> alignment_threads;
+	std::vector<rs2::align> alignment_agents;
 	
 	//callback function that transmits frames to the topics
 	void timerCallback(const ros::TimerEvent& event);
+	void thread_job_function(const int channel_index);
 
 	source& define_publishers();
 	source& init_camera();
