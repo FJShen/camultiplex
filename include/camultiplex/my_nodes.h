@@ -34,8 +34,6 @@ const int Default_FPS = 60;
 	};
 	
 	~source(){
-	    delete[] depth_pub;
-	    delete[] rgb_pub;
 
 	    NODELET_INFO("Trying to terminate queue_thread");
 	    if(queue_thread.get_id() != boost::thread::id()){
@@ -57,7 +55,8 @@ const int Default_FPS = 60;
             }
         }
 
-
+	    delete[] depth_pub;
+	    delete[] rgb_pub;
 	    
 	    ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 	    rhp.deleteParam("diversity");

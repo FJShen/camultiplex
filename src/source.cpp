@@ -23,12 +23,13 @@ namespace camera {
                 .init_camera()
                 .setParamTimeOfStart();
 
-        alignment_agents = std::vector<rs2::align>(N, RS2_STREAM_COLOR);
 
-        queue_thread = boost::thread([&]() {
+        /*queue_thread = boost::thread([&]() {
             try {
+		unsigned int i=0;
                 while (1) {
-                    //std::cout<<"another loop of queue_thread\n"<<std::flush;
+		    ++i;
+		    std::cout<<"queue thread loop "<<i<<"\n"<<std::flush;
                     boost::this_thread::interruption_point();
                     rs2::frameset fs;
                     fs = p.wait_for_frames();
@@ -40,7 +41,7 @@ namespace camera {
             catch (boost::thread_interrupted &) {
                 return;
             }
-        });
+        });*/
 
         //use timer to trigger callback
         timer = rh.createTimer(ros::Duration(1 / FPS), &source::timerCallback, this, true);
@@ -56,7 +57,7 @@ namespace camera {
             alignment_threads.emplace_back(boost::thread(boost::bind(&source::thread_job_function, this, i)));
         }
 
-        NODELET_DEBUG_STREAM("Launched "<<N<<" alignment threads"  << "\n");
+        NODELET_INFO_STREAM("Launched "<<N<<" alignment threads"  << "\n");
     }
 
 
@@ -110,6 +111,8 @@ namespace camera {
                                       "Inserted illegal FPS, will use default FPS= " << (FPS = camera::Default_FPS));
         }
 
+	alignment_agents = std::vector<rs2::align>(N, RS2_STREAM_COLOR);
+
 
         //configure and initialize the camera
         //according to Intel RS documentation, the max FPS of rgb stream is 60
@@ -138,22 +141,32 @@ namespace camera {
     void source::thread_job_function(const int channel_index) try {
         //infinite loop: fetch new frameset from queue, align and reformat into sensor_msgs::Image, send to the publisher
         while (1) {
-
+	    boost::this_thread::interruption_point();
             rs2::frameset frames;
 
             //critical segment: fetching frameset
             boost::unique_lock<boost::mutex> queue_lock(queue_mutex);
-            //std::cout<<"thread job thread obtained queue_lock\n"<<std::flush;
-            if(!frameset_queue.poll_for_frame(&frames)){
+            //std::cout<<"thread job "<<channel_index<<" obtained queue_lock\n"<<std::flush;
+            //if(!frameset_queue.poll_for_frame(&frames)){
+	    if(!p.poll_for_frames(&frames)){
                 //std::cout<<"thread job thread give up mutex\n"<<std::flush;
                 continue;
             }
             queue_lock.unlock();
-            //std::cout<<"thread job thread released queue_lock\n"<<std::flush;
+            std::cout<<"thread "<<channel_index<<" doing seq "<<seq<<"\n"<<std::flush;
+
+	    
+            //critical segment: increment seq num
+	    //obtain local copy of seq
+	    int local_seq;
+	    boost::unique_lock<boost::mutex> seq_lock(seq_mutex);
+	    local_seq = seq;
+	    seq++;
+	    seq_lock.unlock();
 
             //align the frame
             //todo: only align if required to
-            if (false) {
+            if (true) {
                 frames = alignment_agents.at(channel_index).process(frames);
             }
 
@@ -192,7 +205,7 @@ namespace camera {
             //as for the size of the vector, since depth image is of mono16 format, one pixel corresponds to 2 bytes; RGB is of rgb8 format, where one pixel is consisted of 3 channels, 1 byte for each channel leads to a total of 3 bytes/pixel.
 
             //prepare our message
-            depth_msg.header.frame_id = std::to_string(seq);//this is the sequence number since start of the programme
+            depth_msg.header.frame_id = std::to_string(local_seq);//this is the sequence number since start of the programme
             depth_msg.header.stamp.sec = second;
             depth_msg.header.stamp.nsec = nanosecond;
             depth_msg.data = std::vector<uint8_t>(pixel_ptr, pixel_ptr + 2 * pixel_amount);
@@ -202,7 +215,7 @@ namespace camera {
             depth_msg.step = width *
                              2; //each pixel is 2 bytes, so step, which stands for row length in bytes, should be two times "width".
 
-            rgb_msg.header.frame_id = std::to_string(seq);
+            rgb_msg.header.frame_id = std::to_string(local_seq);
             rgb_msg.header.stamp.sec = second;
             rgb_msg.header.stamp.nsec = nanosecond;
             rgb_msg.data = std::vector<uint8_t>(pixel_ptr_color, pixel_ptr_color + 3 * pixel_amount_color);
@@ -212,13 +225,11 @@ namespace camera {
             rgb_msg.step = width_color * 3;//each pixel is 3 bytes - red, green, and blue
 
             //publish frames
-            depth_pub[channel_index].publish(depth_msg);
-            rgb_pub[channel_index].publish(rgb_msg);
+            depth_pub[0].publish(depth_msg);
+            rgb_pub[0].publish(rgb_msg);
 
-            //critical segment: increment seq num
-            boost::unique_lock<boost::mutex> seq_lock(seq_mutex);
-            ++seq;
-            seq_lock.unlock();
+	    std::cout<<"thread "<<channel_index<<" finished seq "<<local_seq<<"\n"<<std::flush;
+
         }
     }
     catch (boost::thread_interrupted &) {

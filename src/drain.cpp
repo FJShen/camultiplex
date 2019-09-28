@@ -25,7 +25,7 @@ namespace camera{
 	this->define_subscribers()
 	    .create_directories();
 	
-	timer = rh.createTimer(ros::Duration(12), &drain::timerCallback, this);
+	timer = rh.createTimer(ros::Duration(5), &drain::timerCallback, this);
 
 	NODELET_INFO("Camera drain node onInit called\n");
     }
@@ -46,7 +46,7 @@ namespace camera{
     void drain::drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num){
 
 	//print debug information
-	NODELET_DEBUG_STREAM( "received depth frame"
+	NODELET_INFO_STREAM( "received "
 			      << (msg->header.frame_id) << " from channel "
 			      << std::to_string(channel_num));
 
