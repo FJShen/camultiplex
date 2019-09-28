@@ -43,8 +43,11 @@ namespace camera{
 
 	boost::thread t3([&](){
 		while(1){this->parallelAction();}
-	    });
+		});
 
+	while(1){
+	    boost::this_thread::yield();
+	}
     }
     
 	
@@ -60,16 +63,16 @@ namespace camera{
 	sensor_msgs::Image rgb_msg;
 
 	rs2::frameset frames;
+
+	frames = p.wait_for_frames();
 	
 	boost::unique_lock<boost::mutex> lock(mutex);       
 	
 	uint32_t channel = seq % N;
 	++seq;
 
-	while(!p.poll_for_frames(&frames));
-
 	lock.unlock();
-        //frames = p.wait_for_frames();
+        
 	double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
 	frames = align_to_color.at(channel).process(frames);
 
@@ -132,8 +135,8 @@ namespace camera{
 	rgb_msg.encoding = sensor_msgs::image_encodings::RGB8;
 	rgb_msg.step = width_color*3;//each pixel is 3 bytes - red, green, and blue
 
-	depth_pub[channel].publish(depth_msg);
-	rgb_pub[channel].publish(rgb_msg);
+	depth_pub[0].publish(depth_msg);
+	rgb_pub[0].publish(rgb_msg);
 
 	
 	NODELET_DEBUG_STREAM("Both streams published to "<<channel<<"\n");

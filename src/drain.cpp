@@ -25,7 +25,7 @@ namespace camera{
 	this->define_subscribers()
 	    .create_directories();
 	
-	timer = rh.createTimer(ros::Duration(12), &drain::timerCallback, this);
+	timer = rh.createTimer(ros::Duration(5), &drain::timerCallback, this);
 
 	NODELET_INFO("Camera drain node onInit called\n");
     }
