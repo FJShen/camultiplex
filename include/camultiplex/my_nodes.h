@@ -57,7 +57,7 @@ const int Default_FPS = 60;
 	ros::Publisher T_pub;
 	ros::Timer timer;
 	
-	boost::mutex mutex;
+	boost::mutex seq_mutex;
 	
 	std::vector<rs2::align> align_to_color;
 
