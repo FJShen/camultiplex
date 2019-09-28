@@ -148,10 +148,11 @@ namespace camera {
             boost::unique_lock<boost::mutex> queue_lock(queue_mutex);
             //std::cout<<"thread job "<<channel_index<<" obtained queue_lock\n"<<std::flush;
             //if(!frameset_queue.poll_for_frame(&frames)){
-	    if(!p.poll_for_frames(&frames)){
+	    /*if(!p.poll_for_frames(&frames)){
                 //std::cout<<"thread job thread give up mutex\n"<<std::flush;
                 continue;
-            }
+		}*/
+	    while(!p.poll_for_frames(&frames));
             queue_lock.unlock();
             std::cout<<"thread "<<channel_index<<" doing seq "<<seq<<"\n"<<std::flush;
 
