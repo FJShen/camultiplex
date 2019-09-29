@@ -6,8 +6,10 @@
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/image_encodings.h"
 #include <boost/filesystem.hpp>
+
 #include <boost/thread.hpp>
 #include <vector>
+
 
 namespace camera{
 
@@ -27,7 +29,9 @@ namespace camera{
 	}
 	
 	//use timer to trigger callback
-    	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this, true);
+
+  timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this, true);
+
 	NODELET_INFO("Camera source node onInit called\n");
     }
 

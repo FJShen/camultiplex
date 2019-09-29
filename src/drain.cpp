@@ -52,7 +52,8 @@ namespace camera{
 
 	//By calling toCvShare we are obtaining a read-only reference to the OpenCV Mat data in the received message
 	//If in the future, this Mat need to be mutated, we have to use toCvCopy instead of toCvShare
-	cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
+	//cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
+    cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg);
 
 	boost::async(
 	    boost::bind(&drain::save_image,
@@ -212,6 +213,12 @@ namespace camera{
 	    depth_sub[i] = rh.subscribe<sensor_msgs::Image>(s_d + std::to_string(i), 8, boost::bind(&drain::drain_depth_callback, this, _1, i));
 	    rgb_sub[i] = rh.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8, boost::bind(&drain::drain_rgb_callback, this, _1, i));
 	}
+
+/*	//experimental: let rgb_sub[0] subscribe to /camera/color/image_raw
+	rgb_sub[0] = rh.subscribe<sensor_msgs::Image>("/camera/color/image_raw", 8, boost::bind(&drain::drain_rgb_callback, this, _1, 0));
+	//let depth_sub[0] subscribe to /camera/aligned_depth_to_color/image_raw
+	depth_sub[0] = rh.subscribe<sensor_msgs::Image>("/camera/aligned_depth_to_color/image_raw", 8, boost::bind(&drain::drain_depth_callback, this, _1, 0));
+	//end experiment*/
 
 	NODELET_INFO_STREAM_NAMED("camera drain", "Defined "<<N<<" subscribers");
 
