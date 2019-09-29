@@ -33,40 +33,26 @@ namespace camera{
 
 
     void source::timerCallback(const ros::TimerEvent& event){
-	boost::thread t1([&](){
-	    try {
-            while (1) { this->parallelAction(); }
-        }
-	    catch(boost::thread_interrupted&){
-	        return;
-	    }
-	    });
 
-	boost::thread t2([&](){
-        try {
-            while (1) { this->parallelAction(); }
-        }
-        catch(boost::thread_interrupted&){
-            return;
-        }
-	    });
-
-	boost::thread t3([&](){
-        try {
-            while (1) { this->parallelAction(); }
-        }
-        catch(boost::thread_interrupted&){
-            return;
-        }
-		});
-
-	while(1){
-	    boost::this_thread::yield();
+	//define lambda which will be launched parallely
+	auto f = [&](){
+		try {
+		    while (1) { this->parallelAction(); }
+		}
+		catch(boost::thread_interrupted&){
+		    return;
+		}
+	};
+	
+        for(int i=0; i<N; i++){
+	    thread_list.emplace_back(f);
 	}
     }
     
 	
     void source::parallelAction(){
+
+	boost::this_thread::interruption_point();
 
 	NODELET_DEBUG_NAMED("source", "TIMER CALLBACK CALLED");
 
@@ -83,13 +69,13 @@ namespace camera{
 	
 	boost::unique_lock<boost::mutex> seq_lock(seq_mutex);
 	
-	uint32_t channel = seq % N;
+	uint32_t local_seq = seq;
 	++seq;
 
 	seq_lock.unlock();
         
 	double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
-	frames = align_to_color.at(channel).process(frames);
+	frames = align_to_color.at(local_seq%N).process(frames);
 
 
 
@@ -123,7 +109,7 @@ namespace camera{
     rgb_msg.data = std::vector<uint8_t>(pixel_ptr_color, pixel_ptr_color + 3*pixel_amount_color);
 
 	//prepare our message
-	depth_msg.header.frame_id = std::to_string(seq);//this is the sequence number since start of the programme
+	depth_msg.header.frame_id = std::to_string(local_seq);//this is the sequence number since start of the programme
 	depth_msg.header.stamp.sec = second ;
 	depth_msg.header.stamp.nsec = nanosecond;
 	depth_msg.height = height;
@@ -131,7 +117,7 @@ namespace camera{
 	depth_msg.encoding = sensor_msgs::image_encodings::MONO16;
 	depth_msg.step = width*2; //each pixel is 2 bytes, so step, which stands for row length in bytes, should be two times "width".
 
-	rgb_msg.header.frame_id = std::to_string(seq);
+	rgb_msg.header.frame_id = std::to_string(local_seq);
 	rgb_msg.header.stamp.sec = second ;
 	rgb_msg.header.stamp.nsec = nanosecond ;
 	rgb_msg.height = height_color;
@@ -139,11 +125,11 @@ namespace camera{
 	rgb_msg.encoding = sensor_msgs::image_encodings::RGB8;
 	rgb_msg.step = width_color*3;//each pixel is 3 bytes - red, green, and blue
 
-	depth_pub[0].publish(depth_msg);
-	rgb_pub[0].publish(rgb_msg);
+	depth_pub[local_seq%N].publish(depth_msg);
+	rgb_pub[local_seq%N].publish(rgb_msg);
 
 	
-	NODELET_DEBUG_STREAM("Both streams published to "<<channel<<"\n");
+	NODELET_DEBUG_STREAM("Both streams published to "<<local_seq%N<<"\n");
 
     }
 
