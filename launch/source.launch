@@ -1,7 +1,7 @@
 <launch>
   <node pkg="nodelet" type="nodelet" name="source"
 	args="load camultiplex/source nodelet_manager">
-    <param name="diversity" type="int" value="4" />
-    <param name="FPS" type="int" value="60" />
+    <param name="diversity" type="int" value="3" />
+    <param name="FPS" type="int" value="30" />
   </node>
 </launch>

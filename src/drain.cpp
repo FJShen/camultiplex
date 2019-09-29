@@ -46,10 +46,10 @@ namespace camera{
     void drain::drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num){
 
 	//print debug information
-	NODELET_INFO_STREAM( "received "
+	/*NODELET_INFO_STREAM( "received "
 			      << (msg->header.frame_id) << " from channel "
 			      << std::to_string(channel_num));
-
+	*/
 	//By calling toCvShare we are obtaining a read-only reference to the OpenCV Mat data in the received message
 	//If in the future, this Mat need to be mutated, we have to use toCvCopy instead of toCvShare
 	cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);

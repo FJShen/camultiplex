@@ -144,17 +144,8 @@ namespace camera {
 	    boost::this_thread::interruption_point();
             rs2::frameset frames;
 
-            //critical segment: fetching frameset
-            boost::unique_lock<boost::mutex> queue_lock(queue_mutex);
-            //std::cout<<"thread job "<<channel_index<<" obtained queue_lock\n"<<std::flush;
-            //if(!frameset_queue.poll_for_frame(&frames)){
-	    /*if(!p.poll_for_frames(&frames)){
-                //std::cout<<"thread job thread give up mutex\n"<<std::flush;
-                continue;
-		}*/
-	    while(!p.poll_for_frames(&frames));
-            queue_lock.unlock();
-            std::cout<<"thread "<<channel_index<<" doing seq "<<seq<<"\n"<<std::flush;
+            frames = p.wait_for_frames();
+            //std::cout<<"thread "<<channel_index<<" obtained frame\n"<<std::flush;
 
 	    
             //critical segment: increment seq num
@@ -226,10 +217,10 @@ namespace camera {
             rgb_msg.step = width_color * 3;//each pixel is 3 bytes - red, green, and blue
 
             //publish frames
-            depth_pub[0].publish(depth_msg);
-            rgb_pub[0].publish(rgb_msg);
+            depth_pub[local_seq%N].publish(depth_msg);
+            rgb_pub[local_seq%N].publish(rgb_msg);
 
-	    std::cout<<"thread "<<channel_index<<" finished seq "<<local_seq<<"\n"<<std::flush;
+	    //std::cout<<"thread "<<channel_index<<" finished seq "<<local_seq<<"\n"<<std::flush;
 
         }
     }
