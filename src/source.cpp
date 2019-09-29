@@ -6,6 +6,8 @@
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/image_encodings.h"
 #include <boost/filesystem.hpp>
+
+#include <boost/thread.hpp>
 #include <vector>
 
 
@@ -27,20 +29,36 @@ namespace camera{
 	}
 	
 	//use timer to trigger callback
-	timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this);
+
+  timer = rh.createTimer(ros::Duration(1/FPS), &source::timerCallback, this, true);
 
 	NODELET_INFO("Camera source node onInit called\n");
     }
 
 
-    
-	
     void source::timerCallback(const ros::TimerEvent& event){
 
-	NODELET_DEBUG_NAMED("source", "TIMEER CALLBACK CALLED");
-       
-	//determine which multiplex channel to use
-	uint32_t channel = seq % N;
+	//define lambda which will be launched parallely
+	auto f = [&](){
+		try {
+		    while (1) { this->parallelAction(); }
+		}
+		catch(boost::thread_interrupted&){
+		    return;
+		}
+	};
+	
+        for(int i=0; i<N; i++){
+	    thread_list.emplace_back(f);
+	}
+    }
+    
+	
+    void source::parallelAction(){
+
+	boost::this_thread::interruption_point();
+
+	NODELET_DEBUG_NAMED("source", "TIMER CALLBACK CALLED");
 
 	unsigned int second;
 	unsigned int nanosecond ;
@@ -49,13 +67,22 @@ namespace camera{
 	sensor_msgs::Image depth_msg;
 	sensor_msgs::Image rgb_msg;
 
+	rs2::frameset frames;
 
-    rs2::frameset frames = p.wait_for_frames();
-    //NODELET_INFO(".");
-    //
-    frames = align_to_color[channel].process(frames);
+	frames = p.wait_for_frames();
+	
+	boost::unique_lock<boost::mutex> seq_lock(seq_mutex);
+	
+	uint32_t local_seq = seq;
+	++seq;
 
-    double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
+	seq_lock.unlock();
+        
+	double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
+	if(enable_align) {
+        frames = align_to_color.at(local_seq % N).process(frames);
+    }
+
 
 	//we need to convert from millisecond to a [second-nanosecond] format 
 	second = frame_timestamp/1000; //obtain the "second" part
@@ -66,8 +93,6 @@ namespace camera{
 	second = unsigned(nanosecond_64/1000000000);
 	nanosecond = unsigned(nanosecond_64-1000000000*(std::uint64_t)(second));
 	
-
-	
 	rs2::depth_frame depth = frames.get_depth_frame();
 	rs2::video_frame color = frames.get_color_frame();
 
@@ -77,42 +102,40 @@ namespace camera{
 	unsigned int width_color = color.get_width();
 	unsigned int height_color = color.get_height();
     
-        uint8_t* pixel_ptr = (uint8_t*)(depth.get_data());
-        uint8_t* pixel_ptr_color = (uint8_t*)(color.get_data());
+	uint8_t* pixel_ptr = (uint8_t*)(depth.get_data());
+	uint8_t* pixel_ptr_color = (uint8_t*)(color.get_data());
 
+	
 	unsigned int pixel_amount = width*height;
 	unsigned int pixel_amount_color = width_color*height_color;
 
 	//as for the size of the vector, since depth image is of mono16 format, one pixel corresponds to 2 bytes; RGB is of rgb8 format, where one pixel is consisted of 3 channels, 1 byte for each channel leads to a total of 3 bytes/pixel.
-	std::vector<uint8_t> depth_image(pixel_ptr, pixel_ptr + 2*pixel_amount);
-	std::vector<uint8_t> color_image(pixel_ptr_color, pixel_ptr_color + 3*pixel_amount_color);
-	
+    depth_msg.data = std::vector<uint8_t>(pixel_ptr, pixel_ptr + 2*pixel_amount);
+    rgb_msg.data = std::vector<uint8_t>(pixel_ptr_color, pixel_ptr_color + 3*pixel_amount_color);
 
 	//prepare our message
-        depth_msg.header.frame_id = std::to_string(seq);//this is the sequence number since start of the programme
+	depth_msg.header.frame_id = std::to_string(local_seq);//this is the sequence number since start of the programme
 	depth_msg.header.stamp.sec = second ;
 	depth_msg.header.stamp.nsec = nanosecond;
-	depth_msg.data = depth_image;
 	depth_msg.height = height;
 	depth_msg.width = width;
 	depth_msg.encoding = sensor_msgs::image_encodings::MONO16;
 	depth_msg.step = width*2; //each pixel is 2 bytes, so step, which stands for row length in bytes, should be two times "width".
 
-	rgb_msg.header.frame_id = std::to_string(seq);
+	rgb_msg.header.frame_id = std::to_string(local_seq);
 	rgb_msg.header.stamp.sec = second ;
 	rgb_msg.header.stamp.nsec = nanosecond ;
-	rgb_msg.data = color_image;
 	rgb_msg.height = height_color;
 	rgb_msg.width = width_color;
 	rgb_msg.encoding = sensor_msgs::image_encodings::RGB8;
 	rgb_msg.step = width_color*3;//each pixel is 3 bytes - red, green, and blue
 
-	depth_pub[channel].publish(depth_msg);
-	rgb_pub[channel].publish(rgb_msg);
+	depth_pub[local_seq%N].publish(depth_msg);
+	rgb_pub[local_seq%N].publish(rgb_msg);
 
 	
-	NODELET_DEBUG_STREAM("Both streams published to "<<channel<<"\n");
-	seq++;
+	NODELET_DEBUG_STREAM("Both streams published to "<<local_seq%N<<"\n");
+
     }
 
 
@@ -155,12 +178,21 @@ namespace camera{
     source& source::init_camera(){
 
 	ros::NodeHandle& rph = getMTPrivateNodeHandle();
-	
+
+	//get FPS param
 	if(!rph.getParam("FPS", FPS)){
 	    NODELET_WARN_STREAM_NAMED("camera source", "No parameter for source FPS specified, will use default value "<<FPS);
 	}
 	else{
 	    NODELET_INFO_STREAM_NAMED("camera source", "Source camera frame-per-second set to "<<FPS);
+	}
+
+	//get align param
+	if(!rph.getParam("align", enable_align)){
+        NODELET_WARN_STREAM_NAMED("camera source", "No parameter for alignment on/off specified, will use default value "<<(enable_align?"on":"off"));
+	}
+	else{
+        NODELET_WARN_STREAM_NAMED("camera source", "Depth alignment is turned on? "<<(enable_align?"yes":"no"));
 	}
 
 	if(camera::Legal_FPS.find(FPS)==camera::Legal_FPS.end()){
@@ -170,9 +202,9 @@ namespace camera{
 
 	//configure and initialize the camera
 	//according to Intel RS documentation, the max FPS of rgb stream is 60 
-    	c.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, FPS);
-    	c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS>60)?60:FPS);
-    	p.start(c);
+    c.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, FPS);
+    c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS>60)?60:FPS);
+    p.start(c);
 	NODELET_INFO("device started!");
 
 	return *this;

@@ -34,8 +34,6 @@ const int Default_FPS = 60;
 	};
 	
 	~source(){
-	    delete[] depth_pub;
-	    delete[] rgb_pub;
 	    
 	    ros::NodeHandle& rhp = getMTPrivateNodeHandle();
 	    rhp.deleteParam("diversity");
@@ -45,6 +43,22 @@ const int Default_FPS = 60;
 	    rh.deleteParam("rs_start_time");
 	    
 	    p.stop();
+	    
+	    for(auto& x : thread_list){
+	    	if(x.get_id() != boost::thread::id()){
+	    		x.interrupt();
+	    	}
+	    }
+	    
+	    for(auto& x : thread_list){
+	    	if (x.try_join_for(boost::chrono::milliseconds(10))) {
+                ("failed to join an alignment_thread");
+            }
+	    }
+	    
+	    
+	    delete[] depth_pub;
+	    delete[] rgb_pub;
 	    
 	    NODELET_INFO("camera source node destrcuted\n");
 	};
@@ -56,7 +70,15 @@ const int Default_FPS = 60;
 	ros::Publisher* rgb_pub;
 	ros::Publisher T_pub;
 	ros::Timer timer;
-    std::vector<rs2::align> align_to_color;
+	
+	boost::mutex seq_mutex;
+	
+	std::vector<rs2::align> align_to_color;
+	std::vector<boost::thread> thread_list;
+
+	bool enable_align = false;
+
+  std::vector<rs2::align> align_to_color;
 
 	int N = 2; //this is the default number of channel diversity 
 	int FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
@@ -72,6 +94,7 @@ const int Default_FPS = 60;
 	source& define_publishers();
 	source& init_camera();
 	source& setParamTimeOfStart();
+	void parallelAction();
     };
 
 
