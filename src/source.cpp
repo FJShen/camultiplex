@@ -75,8 +75,9 @@ namespace camera{
 	seq_lock.unlock();
         
 	double frame_timestamp =  frames.get_timestamp(); //realsense timestamp in ms
-	frames = align_to_color.at(local_seq%N).process(frames);
-
+	if(enable_align) {
+        frames = align_to_color.at(local_seq % N).process(frames);
+    }
 
 
 	//we need to convert from millisecond to a [second-nanosecond] format 
@@ -173,12 +174,21 @@ namespace camera{
     source& source::init_camera(){
 
 	ros::NodeHandle& rph = getMTPrivateNodeHandle();
-	
+
+	//get FPS param
 	if(!rph.getParam("FPS", FPS)){
 	    NODELET_WARN_STREAM_NAMED("camera source", "No parameter for source FPS specified, will use default value "<<FPS);
 	}
 	else{
 	    NODELET_INFO_STREAM_NAMED("camera source", "Source camera frame-per-second set to "<<FPS);
+	}
+
+	//get align param
+	if(!rph.getParam("align", enable_align)){
+        NODELET_WARN_STREAM_NAMED("camera source", "No parameter for alignment on/off specified, will use default value "<<(enable_align?"on":"off"));
+	}
+	else{
+        NODELET_WARN_STREAM_NAMED("camera source", "Depth alignment is turned on? "<<(enable_align?"yes":"no"));
 	}
 
 	if(camera::Legal_FPS.find(FPS)==camera::Legal_FPS.end()){

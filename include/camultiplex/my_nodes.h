@@ -76,6 +76,8 @@ const int Default_FPS = 60;
 	std::vector<rs2::align> align_to_color;
 	std::vector<boost::thread> thread_list;
 
+	bool enable_align = false;
+
 	int N = 2; //this is the default number of channel diversity 
 	int FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
 	uint32_t seq = 0;

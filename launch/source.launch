@@ -3,5 +3,6 @@
 	args="load camultiplex/source nodelet_manager">
     <param name="diversity" type="int" value="2" />
     <param name="FPS" type="int" value="30" />
+    <param name="align" type="bool" value="false" />
   </node>
 </launch>
