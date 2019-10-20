@@ -2,7 +2,7 @@
 <env name="ROSCONSOLE_CONFIG_FILE" value="$(find camultiplex)/custom_rosconfig.config"/>
   <group ns="camera_multiplex">
     <include file="$(find camultiplex)/launch/manager.launch"/>
-    <!--include file="$(find camultiplex)/launch/drain.launch"/-->
+    <include file="$(find camultiplex)/launch/drain.launch"/>
     <include file="$(find camultiplex)/launch/source.launch"/>
   </group>
   

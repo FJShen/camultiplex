@@ -155,8 +155,6 @@ namespace camera {
 
         virtual ~drain_base();
 
-        virtual void onInit();//mandatory initialization function for all nodelets
-
     protected:
         ros::Subscriber *depth_sub;
         ros::Subscriber *rgb_sub;
@@ -182,11 +180,11 @@ namespace camera {
 
         virtual void timerCallback(const ros::TimerEvent &event) = 0;
 
-        drain_base &define_subscribers();
+        virtual drain_base &define_subscribers();
 
-        drain_base &create_directories();
+        virtual drain_base &create_directories();
 
-        drain_base &save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
+        virtual drain_base &save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
     };
 
 
@@ -203,6 +201,7 @@ namespace camera {
         virtual void timerCallback(const ros::TimerEvent &event) override;
 
     public:
+        //drain_nodelet::onInit is override to nodelet::Nodelet::onInit
         virtual void onInit() override {
 
             //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.

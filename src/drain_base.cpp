@@ -29,6 +29,7 @@ namespace camera {
 
       NODELET_INFO("Camera drain node onInit called\n");
       }
+      }
   */
 
     drain_base::~drain_base() {
@@ -44,9 +45,9 @@ namespace camera {
 //	NODELET_DEBUG_STREAM( "received depth frame"
 //			      << (msg->header.frame_id) << " from channel "
 //			      << std::to_string(channel_num));
-        std::cout << "received depth frame"
-                  << (msg->header.frame_id) << " from channel "
-                  << std::to_string(channel_num) << "\n";
+//        std::cout << "received depth frame"
+//                  << (msg->header.frame_id) << " from channel "
+//                  << std::to_string(channel_num) << "\n";
 
         //By calling toCvShare we are obtaining a read-only reference to the OpenCV Mat data in the received message
         //If in the future, this Mat need to be mutated, we have to use toCvCopy instead of toCvShare
@@ -65,7 +66,7 @@ namespace camera {
 
         //print debug information
 //	NODELET_DEBUG_STREAM("saved depth frame" << (msg->header.frame_id));
-        std::cout << "saved depth frame" << (msg->header.frame_id) << "\n";
+//        std::cout << "saved depth frame" << (msg->header.frame_id) << "\n";
     }
 
 
@@ -75,9 +76,9 @@ namespace camera {
 //        NODELET_DEBUG_STREAM( "received rgb frame"
 //			      << (msg->header.frame_id) << " from channel "
 //			      << std::to_string(channel_num));
-        std::cout << "received rgb frame"
-                  << (msg->header.frame_id) << " from channel "
-                  << std::to_string(channel_num) << "\n";
+//        std::cout << "received rgb frame"
+//                  << (msg->header.frame_id) << " from channel "
+//                  << std::to_string(channel_num) << "\n";
 
         cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
 
@@ -92,7 +93,7 @@ namespace camera {
         rgb_counter.updateSeq(std::stoul(msg->header.frame_id));
 
 //        NODELET_DEBUG_STREAM("saved rgb frame" << (msg->header.frame_id));
-        std::cout << "saved rgb frame" << (msg->header.frame_id) << "\n";
+//        std::cout << "saved rgb frame" << (msg->header.frame_id) << "\n";
     }
 
 
