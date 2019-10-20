@@ -4,8 +4,8 @@
 		<description>THis is the source node in the multiplexed camera network.</description>
 	</class>
 	
-	<class type="camera::drain" base_class_type="nodelet::Nodelet" name="camultiplex/drain">
-		<description>THis is the source node in the multiplexed camera network.</description>
+	<class type="camera::drain_nodelet" base_class_type="nodelet::Nodelet" name="camultiplex/drain">
+		<description>THis is the drain node in the multiplexed camera network.</description>
 	</class>
 
 

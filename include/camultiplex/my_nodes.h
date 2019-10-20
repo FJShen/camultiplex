@@ -145,18 +145,19 @@ namespace camera {
     };
 
 
-    class drain : public nodelet::Nodelet {
+    class drain_base {
     public:
 
-        drain() {
-            NODELET_INFO("camera drain node constructed\n");
+        drain_base() {
+//            NODELET_INFO("camera drain node constructed\n");
+            std::cout << ("camera drain node base constructed\n");
         };
 
-        ~drain();
+        virtual ~drain_base();
 
         virtual void onInit();//mandatory initialization function for all nodelets
 
-    private:
+    protected:
         ros::Subscriber *depth_sub;
         ros::Subscriber *rgb_sub;
         ros::Timer timer;
@@ -168,22 +169,62 @@ namespace camera {
                 "/media/nvidia/ExtremeSSD"); //this is the path where the folder will be created
         std::string folder_path; //this is the path of the created folder
 
-
-
         int N = 3; //default number of channel multiplex diversity
+
+        virtual ros::NodeHandle &getMyNodeHandle() = 0;
+
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() = 0;
 
         //ConstPtr& is necessary for nodelets to work
         void drain_depth_callback(const sensor_msgs::Image::ConstPtr &msg, int);
 
         void drain_rgb_callback(const sensor_msgs::Image::ConstPtr &msg, int);
 
-        void timerCallback(const ros::TimerEvent &event);
+        virtual void timerCallback(const ros::TimerEvent &event) = 0;
 
-        drain &define_subscribers();
+        drain_base &define_subscribers();
 
-        drain &create_directories();
+        drain_base &create_directories();
 
-        drain &save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
+        drain_base &save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
+    };
+
+
+    class drain_nodelet : public drain_base, public nodelet::Nodelet {
+    private:
+        virtual ros::NodeHandle &getMyNodeHandle() override {
+            return getMTNodeHandle();
+        }
+
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() override {
+            return getMTPrivateNodeHandle();
+        }
+
+        virtual void timerCallback(const ros::TimerEvent &event) override;
+
+    public:
+        virtual void onInit() override {
+
+            //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
+            ros::NodeHandle &rh = getMyNodeHandle();
+            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
+
+            define_subscribers();
+            create_directories();
+
+            timer = rh.createTimer(ros::Duration(5), &drain_nodelet::timerCallback, this);
+
+            NODELET_INFO("Camera drain node onInit called\n");
+        }
+
+        virtual ~drain_nodelet() {
+            delete[] depth_sub;
+            delete[] rgb_sub;
+            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
+            rhp.deleteParam("diversity");
+            rhp.deleteParam("base_path");
+        }
+
     };
 
 

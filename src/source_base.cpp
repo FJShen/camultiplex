@@ -139,7 +139,6 @@ namespace camera {
 
         //NODELET_DEBUG_STREAM("Both streams published to " << local_seq % N << "\n");
         //std::cout << "Both streams published to " << local_seq % N << "\n";
-
     }
 
 
@@ -153,10 +152,10 @@ namespace camera {
         if (!rph.getParam("diversity", N)) {
 //            NODELET_WARN_STREAM_NAMED("camera source",
 //                                      "No parameter for source channel diversity specified, will use default: " << N);
-            std::cout << "No parameter for source channel diversity specified, will use default: " << N;
+            std::cout << "No parameter for source channel diversity specified, will use default: " << N<<"\n";
         } else {
 //            NODELET_INFO_STREAM_NAMED("camera source", "Number of source channel diversity: " << N);
-            std::cout << "Number of source channel diversity: " << N;
+            std::cout << "Number of source channel diversity: " << N<<"\n";
         }
 
         depth_pub = new(std::nothrow) ros::Publisher[N];
@@ -172,13 +171,13 @@ namespace camera {
         const std::string s_rgb("RGB");
         for (int i = 0; i < N; i++) {
 //            NODELET_DEBUG_STREAM_NAMED("source", "creating #" << i << " publisher");
-            std::cout << "creating #" << i << " publisher";
+            std::cout << "creating #" << i << " publisher\n";
             depth_pub[i] = rh.advertise<sensor_msgs::Image>(s_d + std::to_string(i), 8);
             rgb_pub[i] = rh.advertise<sensor_msgs::Image>(s_rgb + std::to_string(i), 8);
         }
 
 //        NODELET_INFO("Publishers defined");
-        std::cout << ("Publishers defined");
+        std::cout << ("Publishers defined\n");
 
         return *this;
     }
@@ -193,10 +192,10 @@ namespace camera {
         if (!rph.getParam("FPS", FPS)) {
 //            NODELET_WARN_STREAM_NAMED("camera source",
 //                                      "No parameter for source FPS specified, will use default value " << FPS);
-            std::cout << "No parameter for source FPS specified, will use default value " << FPS;
+            std::cout << "No parameter for source FPS specified, will use default value " << FPS<<"\n";
         } else {
 //            NODELET_INFO_STREAM_NAMED("camera source", "Source camera frame-per-second set to " << FPS);
-            std::cout << "Source camera frame-per-second set to " << FPS;
+            std::cout << "Source camera frame-per-second set to " << FPS<<"\n";
         }
 
         //get align param
@@ -205,17 +204,17 @@ namespace camera {
 //                                      "No parameter for alignment on/off specified, will use default value "
 //                                              << (enable_align ? "on" : "off"));
             std::cout << "No parameter for alignment on/off specified, will use default value "
-                      << (enable_align ? "on" : "off");
+                      << (enable_align ? "on\n" : "off\n");
         } else {
 //            NODELET_WARN_STREAM_NAMED("camera source",
 //                                      "Depth alignment is turned on? " << (enable_align ? "yes" : "no"));
-            std::cout << "Depth alignment is turned on? " << (enable_align ? "yes" : "no");
+            std::cout << "Depth alignment is turned on? " << (enable_align ? "yes\n" : "no\n");
         }
 
         if (camera::Legal_FPS.find(FPS) == camera::Legal_FPS.end()) {
 //            NODELET_WARN_STREAM_NAMED("camera source",
 //                                      "Inserted illegal FPS, will use default FPS= " << (FPS = camera::Default_FPS));
-            std::cout << "Inserted illegal FPS, will use default FPS= " << (FPS = camera::Default_FPS);
+            std::cout << "Inserted illegal FPS, will use default FPS= " << (FPS = camera::Default_FPS)<<"\n";
         }
 
 
@@ -225,7 +224,7 @@ namespace camera {
         c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS > 60) ? 60 : FPS);
         p.start(c);
 //        NODELET_INFO("device started!");
-        std::cout << ("device started!");
+        std::cout << ("device started!\n");
 
         return *this;
     }
@@ -242,7 +241,7 @@ namespace camera {
 //        NODELET_INFO_STREAM("Time-of-start set up as parameter \"start_time\", value is " << time_of_start
 //                                                                                          << ". This is used as the unique identifier for the folder created during this recording.");
         std::cout << "Time-of-start set up as parameter \"start_time\", value is " << time_of_start
-                  << ". This is used as the unique identifier for the folder created during this recording.";
+                  << ". This is used as the unique identifier for the folder created during this recording.\n";
 
         return *this;
     }
