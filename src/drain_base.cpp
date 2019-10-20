@@ -106,6 +106,15 @@ namespace camera {
                   << rgb_counter.getLoss() << " frames\n";
     }
 
+    void drain_independent::timerCallback(const ros::TimerEvent &event) {
+//	NODELET_WARN_STREAM_NAMED("drain_camera","Drain: Depth received "<<depth_counter.getCurrentSeq()<<" frames, total loss estimate is "<<depth_counter.getLoss()<<" frames\n");
+//	NODELET_WARN_STREAM_NAMED("drain_camera","Drain: RGB received "<<rgb_counter.getCurrentSeq()<<" frames, total loss estimate is "<<rgb_counter.getLoss()<<" frames\n");
+        std::cout << "Drain: Depth received " << depth_counter.getCurrentSeq() << " frames, total loss estimate is "
+                  << depth_counter.getLoss() << " frames\n";
+        std::cout << "Drain: RGB received " << rgb_counter.getCurrentSeq() << " frames, total loss estimate is "
+                  << rgb_counter.getLoss() << " frames\n";
+    }
+
 
     drain_base &
     drain_base::save_image(cv_bridge::CvImageConstPtr cv_const_ptr, std_msgs::Header header, unsigned int channel) {

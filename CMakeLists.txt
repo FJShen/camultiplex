@@ -113,7 +113,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        #  INCLUDE_DIRS include
+        INCLUDE_DIRS include
         #  LIBRARIES camultiplex
         CATKIN_DEPENDS cv_bridge nodelet pluginlib roscpp sensor_msgs std_msgs message_runtime
         #  DEPENDS system_lib
@@ -149,7 +149,11 @@ add_library(camultiplex
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/camultiplex_node.cpp)
+add_executable(independent_source
+        src/run_source_independent.cpp src/source_base.cpp src/helper.cpp)
+
+add_executable(independent_drain
+        src/run_drain_independent.cpp src/drain_base.cpp src/helper.cpp src/counter.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -163,6 +167,14 @@ add_library(camultiplex
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(camultiplex
+        ${catkin_LIBRARIES} realsense2 ${OpenCV_LIBS} ${Boost_LIBRARIES}
+        )
+
+target_link_libraries(independent_source
+        ${catkin_LIBRARIES} realsense2 ${OpenCV_LIBS} ${Boost_LIBRARIES}
+        )
+
+target_link_libraries(independent_drain
         ${catkin_LIBRARIES} realsense2 ${OpenCV_LIBS} ${Boost_LIBRARIES}
         )
 

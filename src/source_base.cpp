@@ -53,6 +53,23 @@ namespace camera {
         }
     }
 
+    void source_independent::timerCallback(const ros::TimerEvent &event) {
+
+        //define lambda which will be launched parallely
+        auto f = [&]() {
+            try {
+                while (1) { this->parallelAction(); }
+            }
+            catch (boost::thread_interrupted &) {
+                return;
+            }
+        };
+
+        for (int i = 0; i < N; i++) {
+            thread_list.emplace_back(f);
+        }
+    }
+
 
     void source_base::parallelAction() {
 
