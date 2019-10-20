@@ -21,120 +21,172 @@
 #define RGB 0x0000
 #define DEPTH 0x0001
 
-namespace camera{
+namespace camera {
 
-const std::set<int> Legal_FPS = {15, 30, 60, 90};
-const int Default_FPS = 60;
+    const std::set<int> Legal_FPS = {15, 30, 60, 90};
+    const int Default_FPS = 60;
 
-    class source : public nodelet::Nodelet{
+    class source_base {
+        friend class nodelet::Nodelet;
+
     public:
-	
-	source(){
-	    NODELET_INFO("camera source node constructed\n");
-	};
-	
-	~source(){
-	    
-	    ros::NodeHandle& rhp = getMTPrivateNodeHandle();
-	    rhp.deleteParam("diversity");
-	    rhp.deleteParam("FPS");
-	    
-	    ros::NodeHandle& rh = getMTNodeHandle();
-	    rh.deleteParam("rs_start_time");
-	    
-	    p.stop();
-	    
-	    for(auto& x : thread_list){
-	    	if(x.get_id() != boost::thread::id()){
-	    		x.interrupt();
-	    	}
-	    }
-	    
-	    for(auto& x : thread_list){
-	    	if (x.try_join_for(boost::chrono::milliseconds(10))) {
-                ("failed to join an alignment_thread");
+
+        source_base() {
+            std::cout << "camera source base node constructed\n";
+        };
+
+        virtual ~source_base() {
+            std::cout << ("camera source base node destrcuted\n");
+        };
+
+        //virtual void onInit();//mandatory initialization function for all nodelets
+
+    protected:
+        ros::Publisher *depth_pub;
+        ros::Publisher *rgb_pub;
+        ros::Publisher T_pub;
+        ros::Timer timer;
+
+        boost::mutex seq_mutex;
+
+        std::vector<rs2::align> align_to_color;
+        std::vector<boost::thread> thread_list;
+
+        bool enable_align = false;
+
+        int N = 2; //this is the default number of channel diversity
+        int FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
+        uint32_t seq = 0;
+
+        //rs2::frameset frames;
+        rs2::pipeline p;
+        rs2::config c;
+
+        //virtual function to fetch node handle and private node handle
+        virtual ros::NodeHandle &getMyNodeHandle() = 0;
+
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() = 0;
+
+        virtual source_base &define_publishers();
+
+        virtual source_base &init_camera();
+
+        virtual void parallelAction();
+
+        virtual void timerCallback(const ros::TimerEvent &event) = 0;
+
+        source_base &setParamTimeOfStart();
+    };
+
+
+    class source_nodelet : public source_base, public nodelet::Nodelet {
+    private:
+        virtual ros::NodeHandle &getMyNodeHandle() override {
+            return getMTNodeHandle();
+        }
+
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() override {
+            return getMTPrivateNodeHandle();
+        }
+
+        //callback function that transmits frames to the topics
+        virtual void timerCallback(const ros::TimerEvent &event) override;
+
+    public:
+        virtual void onInit() override {
+
+            //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
+            ros::NodeHandle &rh = getMyNodeHandle();
+            ros::NodeHandle &rph = getMyPrivateNodeHandle();
+
+            define_publishers();
+            init_camera();
+            setParamTimeOfStart();
+
+            for (int i = 0; i < N; i++) {
+                align_to_color.emplace_back(RS2_STREAM_COLOR);
             }
-	    }
-	    
-	    
-	    delete[] depth_pub;
-	    delete[] rgb_pub;
-	    
-	    NODELET_INFO("camera source node destrcuted\n");
-	};
-	
-	virtual void onInit();//mandatory initialization function for all nodelets
 
-    private:
-	ros::Publisher* depth_pub;
-	ros::Publisher* rgb_pub;
-	ros::Publisher T_pub;
-	ros::Timer timer;
-	
-	boost::mutex seq_mutex;
-	
-	std::vector<rs2::align> align_to_color;
-	std::vector<boost::thread> thread_list;
+            //use timer to trigger callback
 
-	bool enable_align = false;
+            timer = rh.createTimer(ros::Duration(1 / FPS), &source_nodelet::timerCallback, this, true);
 
-	int N = 2; //this is the default number of channel diversity 
-	int FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
-	uint32_t seq = 0;
-	
-	//rs2::frameset frames;
-	rs2::pipeline p;
-	rs2::config c;
-	
-	//callback function that transmits frames to the topics
-	void timerCallback(const ros::TimerEvent& event);
+            std::cout << ("Camera source node onInit called\n");
+        }
 
-	source& define_publishers();
-	source& init_camera();
-	source& setParamTimeOfStart();
-	void parallelAction();
+        virtual ~source_nodelet() {
+
+            for (auto &x : thread_list) {
+                if (x.get_id() != boost::thread::id()) {
+                    x.interrupt();
+                }
+            }
+
+            for (auto &x : thread_list) {
+                if (x.try_join_for(boost::chrono::milliseconds(10))) {
+                    std::cerr << ("failed to join an alignment_thread");
+                }
+            }
+
+            p.stop();
+
+            delete[] depth_pub;
+            delete[] rgb_pub;
+
+            //ros::NodeHandle& rhp = getMTPrivateNodeHandle();
+            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
+            rhp.deleteParam("diversity");
+            rhp.deleteParam("FPS");
+
+//	    ros::NodeHandle& rh = getMTNodeHandle();
+            ros::NodeHandle &rh = getMyNodeHandle();
+            rh.deleteParam("rs_start_time");
+        }
     };
 
 
- 
-    class drain : public nodelet::Nodelet{
+    class drain : public nodelet::Nodelet {
     public:
-	
-	drain(){  
-	    NODELET_INFO("camera drain node constructed\n");
-	};
-	
-	~drain();
-	
-	virtual void onInit();//mandatory initialization function for all nodelets
-	
+
+        drain() {
+            NODELET_INFO("camera drain node constructed\n");
+        };
+
+        ~drain();
+
+        virtual void onInit();//mandatory initialization function for all nodelets
+
     private:
-	ros::Subscriber* depth_sub;
-	ros::Subscriber* rgb_sub;
-	ros::Timer timer;
-	
-	helper::counter depth_counter;
-	helper::counter rgb_counter;
+        ros::Subscriber *depth_sub;
+        ros::Subscriber *rgb_sub;
+        ros::Timer timer;
 
-	std::string base_path = std::string("/media/nvidia/ExtremeSSD"); //this is the path where the folder will be created
-	std::string folder_path; //this is the path of the created folder
+        helper::counter depth_counter;
+        helper::counter rgb_counter;
 
-	
-       
-	int N=3; //default number of channel multiplex diversity
+        std::string base_path = std::string(
+                "/media/nvidia/ExtremeSSD"); //this is the path where the folder will be created
+        std::string folder_path; //this is the path of the created folder
 
-	//ConstPtr& is necessary for nodelets to work
-	void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int);
-	void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int);
-	void timerCallback(const ros::TimerEvent& event);
 
-	drain& define_subscribers();
-	drain& create_directories();
-	drain& save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
+
+        int N = 3; //default number of channel multiplex diversity
+
+        //ConstPtr& is necessary for nodelets to work
+        void drain_depth_callback(const sensor_msgs::Image::ConstPtr &msg, int);
+
+        void drain_rgb_callback(const sensor_msgs::Image::ConstPtr &msg, int);
+
+        void timerCallback(const ros::TimerEvent &event);
+
+        drain &define_subscribers();
+
+        drain &create_directories();
+
+        drain &save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
     };
 
 
-   
 }
 
 

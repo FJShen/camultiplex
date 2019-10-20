@@ -134,7 +134,7 @@ include_directories(
 ## Declare a C++ library
 #The library name should be the same as defined in the xml file
  add_library(camultiplex
-   src/source.cpp
+         src/source_base.cpp
    src/drain.cpp
    src/export_so_library.cpp
    src/helper.cpp
