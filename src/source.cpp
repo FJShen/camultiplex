@@ -204,7 +204,24 @@ namespace camera{
 	//according to Intel RS documentation, the max FPS of rgb stream is 60 
     c.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, FPS);
     c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS>60)?60:FPS);
-    p.start(c);
+    rs2::pipeline_profile selection = p.start(c);
+
+    //obtain rgb camera
+    rs2::device selected_device = selection.get_device();
+    auto sensor_vec = selected_device.query_sensors();
+    rs2::sensor rgb_sensor;
+
+    for(auto&& x : sensor_vec){
+        std::string module_name = x.get_info(RS2_CAMERA_INFO_NAME);
+        NODELET_INFO("%s\n", module_name.data());
+        if(module_name == "RGB Camera"){
+            rgb_sensor = x;
+        }
+    }
+
+    rgb_sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0); //we shouldn't really need this line since whenever exposure is manually changed, auto exposure is off
+    rgb_sensor.set_option(RS2_OPTION_EXPOSURE, 20);
+
 	NODELET_INFO("device started!");
 
 	return *this;
