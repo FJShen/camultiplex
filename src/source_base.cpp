@@ -239,7 +239,12 @@ namespace camera {
         //according to Intel RS documentation, the max FPS of rgb stream is 60
         c.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, FPS);
         c.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, (FPS > 60) ? 60 : FPS);
-        p.start(c);
+        try {
+            p.start(c);
+        }
+        catch(rs2::error& err){
+            std::cerr<<"Caught rs2::error, failed_function="<<err.get_failed_function()<<", message= "<<err.what()<<"\n";
+        }
 //        NODELET_INFO("device started!");
         std::cout << ("device started!\n");
 

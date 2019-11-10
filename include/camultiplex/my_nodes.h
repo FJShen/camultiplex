@@ -124,7 +124,7 @@ namespace camera {
             }
 
             for (auto &x : thread_list) {
-                if (x.try_join_for(boost::chrono::milliseconds(10))) {
+                if (x.try_join_for(boost::chrono::milliseconds(100))) {
                     std::cerr << ("failed to join an alignment_thread");
                 }
             }
@@ -159,7 +159,7 @@ namespace camera {
             }
 
             for (auto &x : thread_list) {
-                if (x.try_join_for(boost::chrono::milliseconds(10))) {
+                if (x.try_join_for(boost::chrono::milliseconds(100))) {
                     std::cerr << ("failed to join an alignment_thread");
                 }
             }
