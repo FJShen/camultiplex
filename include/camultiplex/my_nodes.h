@@ -67,11 +67,11 @@ namespace camera {
 
         virtual ros::NodeHandle &getMyPrivateNodeHandle() = 0;
 
-        virtual source_base &define_publishers();
+        source_base &define_publishers();
 
-        virtual source_base &init_camera();
+        source_base &init_camera();
 
-        virtual void parallelAction();
+        void parallelAction();
 
         virtual void timerCallback(const ros::TimerEvent &event) = 0;
 
@@ -93,6 +93,7 @@ namespace camera {
         virtual void timerCallback(const ros::TimerEvent &event) override;
 
     public:
+        //onInit is an override of nodelet::Nodelet::onInit()
         virtual void onInit() override {
 
             //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
@@ -299,9 +300,9 @@ namespace camera {
 
     };
 
-    class drain_independent : public drain_base{
+    class drain_independent : public drain_base {
     public:
-        drain_independent() : nph("drain"){
+        drain_independent() : nph("drain") {
             selfInit();
         }
 
@@ -319,7 +320,7 @@ namespace camera {
 
         //equivalent of method void nodelet::Nodelet::onInit(), but since source_independent is not dereived from Nodelet
         //we just have to call selfInit() in constructor
-        void selfInit(){
+        void selfInit() {
 
             //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
             ros::NodeHandle &rh = getMyNodeHandle();
@@ -330,15 +331,15 @@ namespace camera {
 
             timer = rh.createTimer(ros::Duration(5), &drain_independent::timerCallback, this);
 
-            std::cout<<("Camera independent drain node selfInit called\n");
+            std::cout << ("Camera independent drain node selfInit called\n");
         }
 
     protected:
-        virtual ros::NodeHandle &getMyNodeHandle() override{
+        virtual ros::NodeHandle &getMyNodeHandle() override {
             return nh;
         }
 
-        virtual ros::NodeHandle &getMyPrivateNodeHandle() override{
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() override {
             return nph;
         }
 
