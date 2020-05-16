@@ -2,13 +2,14 @@
 #include "camultiplex/helper.h"
 #include <iostream>
 #include <sstream>
+#include <string>
 
 
 void helper::print_time_stamp(std::string comment){
     std::cout<< comment<<" "
 	     << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count()
 	     <<"\t";
-};
+}
 
 
 

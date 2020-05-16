@@ -31,11 +31,27 @@ namespace camera {
 
     public:
 
-        source_base() {
+        source_base()
+        {
             std::cout << "camera source base node constructed\n";
         };
 
         virtual ~source_base() {
+            for (auto &x : thread_list) {
+                if (x.get_id() != boost::thread::id()) {
+                    x.interrupt();
+                }
+            }
+    
+            for (auto &x : thread_list) {
+                if (!x.try_join_for(boost::chrono::milliseconds(100))) {
+                    std::cerr << ("failed to join a thread\n");
+                }
+            }
+    
+            p.stop();
+            delete[] depth_pub;
+            delete[] rgb_pub;
             std::cout << ("camera source base node destrcuted\n");
         };
 
@@ -54,8 +70,8 @@ namespace camera {
 
         bool enable_align = false;
 
-        int N = 2; //this is the default number of channel diversity
-        int FPS = 60; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
+        int N = 1; //this is the default number of channel diversity
+        int FPS = camera::Default_FPS; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
         uint32_t seq = 0;
 
         //rs2::frameset frames;
@@ -71,11 +87,14 @@ namespace camera {
 
         virtual source_base &init_camera();
 
+        //This is the kernel of operation; the conversion from rs2::frameset to sensor_msgs::Image is done here
         virtual void parallelAction();
 
         virtual void timerCallback(const ros::TimerEvent &event) = 0;
 
         source_base &setParamTimeOfStart();
+        
+        void initialize();
     };
 
 
@@ -94,51 +113,16 @@ namespace camera {
 
     public:
         virtual void onInit() override {
-
-            //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
-            ros::NodeHandle &rh = getMyNodeHandle();
-            ros::NodeHandle &rph = getMyPrivateNodeHandle();
-
-            define_publishers();
-            init_camera();
-            setParamTimeOfStart();
-
-            for (int i = 0; i < N; i++) {
-                align_to_color.emplace_back(RS2_STREAM_COLOR);
-            }
-
-            //use timer to trigger callback
-
-            timer = rh.createTimer(ros::Duration(1 / FPS), &source_nodelet::timerCallback, this, true);
-
+            initialize();
             std::cout << ("Camera source node nodelet onInit called\n");
         }
 
         virtual ~source_nodelet() {
-
-            for (auto &x : thread_list) {
-                if (x.get_id() != boost::thread::id()) {
-                    x.interrupt();
-                }
-            }
-
-            for (auto &x : thread_list) {
-                if (x.try_join_for(boost::chrono::milliseconds(10))) {
-                    std::cerr << ("failed to join an alignment_thread");
-                }
-            }
-
-            p.stop();
-
-            delete[] depth_pub;
-            delete[] rgb_pub;
-
-            //ros::NodeHandle& rhp = getMTPrivateNodeHandle();
             ros::NodeHandle &rhp = getMyPrivateNodeHandle();
             rhp.deleteParam("diversity");
             rhp.deleteParam("FPS");
-
-//	    ros::NodeHandle& rh = getMTNodeHandle();
+            rhp.deleteParam("align");
+            
             ros::NodeHandle &rh = getMyNodeHandle();
             rh.deleteParam("rs_start_time");
         }
@@ -151,29 +135,11 @@ namespace camera {
         }
 
         virtual ~source_independent() {
-            for (auto &x : thread_list) {
-                if (x.get_id() != boost::thread::id()) {
-                    x.interrupt();
-                }
-            }
-
-            for (auto &x : thread_list) {
-                if (x.try_join_for(boost::chrono::milliseconds(10))) {
-                    std::cerr << ("failed to join an alignment_thread");
-                }
-            }
-
-            p.stop();
-
-            delete[] depth_pub;
-            delete[] rgb_pub;
-
-            //ros::NodeHandle& rhp = getMTPrivateNodeHandle();
             ros::NodeHandle &rhp = getMyPrivateNodeHandle();
             rhp.deleteParam("diversity");
             rhp.deleteParam("FPS");
+            rhp.deleteParam("align");
 
-//	    ros::NodeHandle& rh = getMTNodeHandle();
             ros::NodeHandle &rh = getMyNodeHandle();
             rh.deleteParam("rs_start_time");
         }
@@ -186,22 +152,7 @@ namespace camera {
         //equivalent of method void nodelet::Nodelet::onInit(), but since source_independent is not dereived from Nodelet
         //we just have to call selfInit() in constructor
         void selfInit() {
-            //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
-            ros::NodeHandle &rh = getMyNodeHandle();
-            ros::NodeHandle &rph = getMyPrivateNodeHandle();
-
-            define_publishers();
-            init_camera();
-            setParamTimeOfStart();
-
-            for (int i = 0; i < N; i++) {
-                align_to_color.emplace_back(RS2_STREAM_COLOR);
-            }
-
-            //use timer to trigger callback
-
-            timer = rh.createTimer(ros::Duration(1 / FPS), &source_independent::timerCallback, this, true);
-
+            initialize();
             std::cout << ("Camera independent source node onInit called\n");
         }
 

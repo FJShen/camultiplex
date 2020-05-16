@@ -2,8 +2,8 @@
   <node pkg="camultiplex" type="independent_drain" name="drain" output="screen">
 
     <param name="diversity" type="int" value="2" />
-    <!--param name="base_path" type="string" value="/media/nvidia/ExtremeSSD" /-->
-    <param name="base_path" type="string" value="/home/nvidia" />
+    <param name="base_path" type="string" value="/media/nvidia/ExtremeSSD" />
+    <!--param name="base_path" type="string" value="/home/nvidia" /-->
 
   </node>
 </launch>

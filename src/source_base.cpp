@@ -38,7 +38,7 @@ namespace camera {
 
     void source_nodelet::timerCallback(const ros::TimerEvent &event) {
 
-        //define lambda which will be launched parallely
+        //define lambda which will be launched in parallel
         auto f = [&]() {
             try {
                 while (1) { this->parallelAction(); }
@@ -55,7 +55,7 @@ namespace camera {
 
     void source_independent::timerCallback(const ros::TimerEvent &event) {
 
-        //define lambda which will be launched parallely
+        //define lambda which will be launched in parallel
         auto f = [&]() {
             try {
                 while (1) { this->parallelAction(); }
@@ -86,31 +86,31 @@ namespace camera {
         sensor_msgs::Image rgb_msg;
 
         rs2::frameset frames;
-
-        frames = p.wait_for_frames();
-
+    
         boost::unique_lock<boost::mutex> seq_lock(seq_mutex);
+        
+        frames = p.wait_for_frames();
 
         uint32_t local_seq = seq;
         ++seq;
 
         seq_lock.unlock();
 
-        double frame_timestamp = frames.get_timestamp(); //realsense timestamp in ms
         if (enable_align) {
             frames = align_to_color.at(local_seq % N).process(frames);
         }
-
-
+    
+    
+        double frame_timestamp = frames.get_timestamp(); //realsense timestamp in ms
         //we need to convert from millisecond to a [second-nanosecond] format
         second = frame_timestamp / 1000; //obtain the "second" part
-        nanosecond = (frame_timestamp - 1000 * (double) (second)) * 1000000; //obtain the "nanosecond" part
+        nanosecond = (frame_timestamp - 1000 * (double) (second)) * 1000000; //obtain the "nanosecond" part. Need to convert "second" to double otherwise multiplying it by 1000 will likely overflow uint's range
 
-        //use chrono time since epoch
-        std::uint64_t nanosecond_64 = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::system_clock::now().time_since_epoch()).count();
-        second = unsigned(nanosecond_64 / 1000000000);
-        nanosecond = unsigned(nanosecond_64 - 1000000000 * (std::uint64_t) (second));
+//        //use chrono time since epoch
+//        std::uint64_t nanosecond_64 = std::chrono::duration_cast<std::chrono::nanoseconds>(
+//                std::chrono::system_clock::now().time_since_epoch()).count();
+//        second = unsigned(nanosecond_64 / 1000000000);
+//        nanosecond = unsigned(nanosecond_64 - 1000000000 * (std::uint64_t) (second));
 
         rs2::depth_frame depth = frames.get_depth_frame();
         rs2::video_frame color = frames.get_color_frame();
@@ -128,19 +128,20 @@ namespace camera {
         unsigned int pixel_amount = width * height;
         unsigned int pixel_amount_color = width_color * height_color;
 
-        //as for the size of the vector, since depth image is of mono16 format, one pixel corresponds to 2 bytes; RGB is of rgb8 format, where one pixel is consisted of 3 channels, 1 byte for each channel leads to a total of 3 bytes/pixel.
+        //As for the size of the vector, since depth image is of mono16 format, one pixel corresponds to 2 bytes; RGB is of rgb8 format, where one pixel is consisted of 3 channels, 1 byte for each channel leads to a total of 3 bytes/pixel.
+        //The type of sensor_msgs::Image.data is std::vector<uint8_t>
+        //Reference: https://docs.ros.org/diamondback/api/sensor_msgs/html/Image_8h_source.html
         depth_msg.data = std::vector<uint8_t>(pixel_ptr, pixel_ptr + 2 * pixel_amount);
         rgb_msg.data = std::vector<uint8_t>(pixel_ptr_color, pixel_ptr_color + 3 * pixel_amount_color);
 
-        //prepare our message
+        //prepare rest of the part of our message
         depth_msg.header.frame_id = std::to_string(local_seq);//this is the sequence number since start of the programme
         depth_msg.header.stamp.sec = second;
         depth_msg.header.stamp.nsec = nanosecond;
         depth_msg.height = height;
         depth_msg.width = width;
         depth_msg.encoding = sensor_msgs::image_encodings::MONO16;
-        depth_msg.step = width *
-                         2; //each pixel is 2 bytes, so step, which stands for row length in bytes, should be two times "width".
+        depth_msg.step = width * 2; //each pixel is 2 bytes; so step, which stands for row length in bytes, should be two times "width".
 
         rgb_msg.header.frame_id = std::to_string(local_seq);
         rgb_msg.header.stamp.sec = second;
@@ -205,16 +206,6 @@ namespace camera {
 //        ros::NodeHandle &rph = getMTPrivateNodeHandle();
         ros::NodeHandle &rph = getMyPrivateNodeHandle();
 
-        //get FPS param
-        if (!rph.getParam("FPS", FPS)) {
-//            NODELET_WARN_STREAM_NAMED("camera source",
-//                                      "No parameter for source FPS specified, will use default value " << FPS);
-            std::cout << "No parameter for source FPS specified, will use default value " << FPS<<"\n";
-        } else {
-//            NODELET_INFO_STREAM_NAMED("camera source", "Source camera frame-per-second set to " << FPS);
-            std::cout << "Source camera frame-per-second set to " << FPS<<"\n";
-        }
-
         //get align param
         if (!rph.getParam("align", enable_align)) {
 //            NODELET_WARN_STREAM_NAMED("camera source",
@@ -227,11 +218,27 @@ namespace camera {
 //                                      "Depth alignment is turned on? " << (enable_align ? "yes" : "no"));
             std::cout << "Depth alignment is turned on? " << (enable_align ? "yes\n" : "no\n");
         }
-
+    
+        //get FPS param
+        if (!rph.getParam("FPS", FPS)) {
+//            NODELET_WARN_STREAM_NAMED("camera source",
+//                                      "No parameter for source FPS specified, will use default value " << FPS);
+            std::cout << "No parameter for source FPS specified, will use default value " << FPS<<"\n";
+        } else {
+//            NODELET_INFO_STREAM_NAMED("camera source", "Source camera frame-per-second set to " << FPS);
+            std::cout << "Source camera frame-per-second set to " << FPS<<"\n";
+        }
+        
+        //check FPS validity
         if (camera::Legal_FPS.find(FPS) == camera::Legal_FPS.end()) {
+            //std::set<T>.find(xxx) returns std::set<T>.end() if xxx is not found
 //            NODELET_WARN_STREAM_NAMED("camera source",
 //                                      "Inserted illegal FPS, will use default FPS= " << (FPS = camera::Default_FPS));
-            std::cout << "Inserted illegal FPS, will use default FPS= " << (FPS = camera::Default_FPS)<<"\n";
+            std::cout << "FPS value is illegal, will use default FPS= " << (FPS = camera::Default_FPS)<<"\n";
+        }
+        
+        if(FPS>60){
+            std::cout<<"Warning: Per Intel RS 435 documentation, the maximum supported FPS for RGB stream is 60.\n";
         }
 
 
@@ -261,6 +268,25 @@ namespace camera {
                   << ". This is used as the unique identifier for the folder created during this recording.\n";
 
         return *this;
+    }
+    
+    void source_base::initialize(){
+        //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
+        ros::NodeHandle &rh = getMyNodeHandle();
+        ros::NodeHandle &rph = getMyPrivateNodeHandle();
+    
+        //tentatively moved to source_base ctor
+        define_publishers();
+        init_camera();
+        setParamTimeOfStart();
+    
+        for(int i=0; i<N; ++i){
+            align_to_color.emplace_back(RS2_STREAM_COLOR);
+        }
+    
+        //use timer to trigger callback
+    
+        timer = rh.createTimer(ros::Duration(1 / FPS), &source_base::timerCallback, this, true);
     }
 
 }
