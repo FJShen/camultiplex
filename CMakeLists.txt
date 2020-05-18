@@ -8,23 +8,23 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  cv_bridge
-  nodelet
-  pluginlib
-  roscpp
-  sensor_msgs
-  std_msgs
-  message_generation
-)
+        cv_bridge
+        nodelet
+        pluginlib
+        roscpp
+        sensor_msgs
+        std_msgs
+        message_generation
+        )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS
-	thread
-	filesystem
-	chrono
-)
+        thread
+        filesystem
+        chrono
+        )
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -57,10 +57,10 @@ find_package(Boost REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   TTest.msg 
- )
+add_message_files(
+        FILES
+        TTest.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -77,11 +77,11 @@ find_package(Boost REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-  sensor_msgs
-  std_msgs
- )
+generate_messages(
+        DEPENDENCIES
+        sensor_msgs
+        std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -113,10 +113,10 @@ find_package(Boost REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES camultiplex
-  CATKIN_DEPENDS cv_bridge nodelet pluginlib roscpp sensor_msgs std_msgs message_runtime
-#  DEPENDS system_lib
+        INCLUDE_DIRS include
+        #  LIBRARIES camultiplex
+        CATKIN_DEPENDS cv_bridge nodelet pluginlib roscpp sensor_msgs std_msgs message_runtime
+        #  DEPENDS system_lib
 )
 
 ###########
@@ -126,20 +126,20 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
+        include
+        ${catkin_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 #The library name should be the same as defined in the xml file
- add_library(camultiplex
-   src/source.cpp
-   src/drain.cpp
-   src/export_so_library.cpp
-   src/helper.cpp
-   src/counter.cpp
-         )
+add_library(camultiplex
+        src/source_base.cpp
+        src/drain_base.cpp
+        src/export_so_library.cpp
+        src/helper.cpp
+        src/counter.cpp
+        )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -149,7 +149,11 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/camultiplex_node.cpp)
+add_executable(independent_source
+        src/run_source_independent.cpp src/source_base.cpp src/helper.cpp)
+
+add_executable(independent_drain
+        src/run_drain_independent.cpp src/drain_base.cpp src/helper.cpp src/counter.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -162,10 +166,18 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(camultiplex
-   ${catkin_LIBRARIES} realsense2 ${OpenCV_LIBS} ${Boost_LIBRARIES}
- )
- 
+target_link_libraries(camultiplex
+        ${catkin_LIBRARIES} realsense2 ${OpenCV_LIBS} ${Boost_LIBRARIES}
+        )
+
+target_link_libraries(independent_source
+        ${catkin_LIBRARIES} realsense2 ${OpenCV_LIBS} ${Boost_LIBRARIES}
+        )
+
+target_link_libraries(independent_drain
+        ${catkin_LIBRARIES} realsense2 ${OpenCV_LIBS} ${Boost_LIBRARIES}
+        )
+
 
 #############
 ## Install ##
