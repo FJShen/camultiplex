@@ -70,9 +70,35 @@ CMakeFiles/camultiplex.dir/src/source_base.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/camultiplex.dir/src/source_base.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nvidia/catkin_ws/src/camultiplex/src/source_base.cpp -o CMakeFiles/camultiplex.dir/src/source_base.cpp.s
 
+CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o: CMakeFiles/camultiplex.dir/flags.make
+CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o: ../src/source_nodelet.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o -c /home/nvidia/catkin_ws/src/camultiplex/src/source_nodelet.cpp
+
+CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nvidia/catkin_ws/src/camultiplex/src/source_nodelet.cpp > CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.i
+
+CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nvidia/catkin_ws/src/camultiplex/src/source_nodelet.cpp -o CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.s
+
+CMakeFiles/camultiplex.dir/src/source_independent.cpp.o: CMakeFiles/camultiplex.dir/flags.make
+CMakeFiles/camultiplex.dir/src/source_independent.cpp.o: ../src/source_independent.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/camultiplex.dir/src/source_independent.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camultiplex.dir/src/source_independent.cpp.o -c /home/nvidia/catkin_ws/src/camultiplex/src/source_independent.cpp
+
+CMakeFiles/camultiplex.dir/src/source_independent.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/camultiplex.dir/src/source_independent.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nvidia/catkin_ws/src/camultiplex/src/source_independent.cpp > CMakeFiles/camultiplex.dir/src/source_independent.cpp.i
+
+CMakeFiles/camultiplex.dir/src/source_independent.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/camultiplex.dir/src/source_independent.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nvidia/catkin_ws/src/camultiplex/src/source_independent.cpp -o CMakeFiles/camultiplex.dir/src/source_independent.cpp.s
+
 CMakeFiles/camultiplex.dir/src/drain_base.cpp.o: CMakeFiles/camultiplex.dir/flags.make
 CMakeFiles/camultiplex.dir/src/drain_base.cpp.o: ../src/drain_base.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/camultiplex.dir/src/drain_base.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/camultiplex.dir/src/drain_base.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camultiplex.dir/src/drain_base.cpp.o -c /home/nvidia/catkin_ws/src/camultiplex/src/drain_base.cpp
 
 CMakeFiles/camultiplex.dir/src/drain_base.cpp.i: cmake_force
@@ -85,7 +111,7 @@ CMakeFiles/camultiplex.dir/src/drain_base.cpp.s: cmake_force
 
 CMakeFiles/camultiplex.dir/src/export_so_library.cpp.o: CMakeFiles/camultiplex.dir/flags.make
 CMakeFiles/camultiplex.dir/src/export_so_library.cpp.o: ../src/export_so_library.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/camultiplex.dir/src/export_so_library.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/camultiplex.dir/src/export_so_library.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camultiplex.dir/src/export_so_library.cpp.o -c /home/nvidia/catkin_ws/src/camultiplex/src/export_so_library.cpp
 
 CMakeFiles/camultiplex.dir/src/export_so_library.cpp.i: cmake_force
@@ -98,7 +124,7 @@ CMakeFiles/camultiplex.dir/src/export_so_library.cpp.s: cmake_force
 
 CMakeFiles/camultiplex.dir/src/helper.cpp.o: CMakeFiles/camultiplex.dir/flags.make
 CMakeFiles/camultiplex.dir/src/helper.cpp.o: ../src/helper.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/camultiplex.dir/src/helper.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/camultiplex.dir/src/helper.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camultiplex.dir/src/helper.cpp.o -c /home/nvidia/catkin_ws/src/camultiplex/src/helper.cpp
 
 CMakeFiles/camultiplex.dir/src/helper.cpp.i: cmake_force
@@ -111,7 +137,7 @@ CMakeFiles/camultiplex.dir/src/helper.cpp.s: cmake_force
 
 CMakeFiles/camultiplex.dir/src/counter.cpp.o: CMakeFiles/camultiplex.dir/flags.make
 CMakeFiles/camultiplex.dir/src/counter.cpp.o: ../src/counter.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/camultiplex.dir/src/counter.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/camultiplex.dir/src/counter.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camultiplex.dir/src/counter.cpp.o -c /home/nvidia/catkin_ws/src/camultiplex/src/counter.cpp
 
 CMakeFiles/camultiplex.dir/src/counter.cpp.i: cmake_force
@@ -122,37 +148,26 @@ CMakeFiles/camultiplex.dir/src/counter.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/camultiplex.dir/src/counter.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nvidia/catkin_ws/src/camultiplex/src/counter.cpp -o CMakeFiles/camultiplex.dir/src/counter.cpp.s
 
-CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o: CMakeFiles/camultiplex.dir/flags.make
-CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o: ../src/source_nodelet.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o -c /home/nvidia/catkin_ws/src/camultiplex/src/source_nodelet.cpp
-
-CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nvidia/catkin_ws/src/camultiplex/src/source_nodelet.cpp > CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.i
-
-CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nvidia/catkin_ws/src/camultiplex/src/source_nodelet.cpp -o CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.s
-
 # Object files for target camultiplex
 camultiplex_OBJECTS = \
 "CMakeFiles/camultiplex.dir/src/source_base.cpp.o" \
+"CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o" \
+"CMakeFiles/camultiplex.dir/src/source_independent.cpp.o" \
 "CMakeFiles/camultiplex.dir/src/drain_base.cpp.o" \
 "CMakeFiles/camultiplex.dir/src/export_so_library.cpp.o" \
 "CMakeFiles/camultiplex.dir/src/helper.cpp.o" \
-"CMakeFiles/camultiplex.dir/src/counter.cpp.o" \
-"CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o"
+"CMakeFiles/camultiplex.dir/src/counter.cpp.o"
 
 # External object files for target camultiplex
 camultiplex_EXTERNAL_OBJECTS =
 
 devel/lib/libcamultiplex.so: CMakeFiles/camultiplex.dir/src/source_base.cpp.o
+devel/lib/libcamultiplex.so: CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o
+devel/lib/libcamultiplex.so: CMakeFiles/camultiplex.dir/src/source_independent.cpp.o
 devel/lib/libcamultiplex.so: CMakeFiles/camultiplex.dir/src/drain_base.cpp.o
 devel/lib/libcamultiplex.so: CMakeFiles/camultiplex.dir/src/export_so_library.cpp.o
 devel/lib/libcamultiplex.so: CMakeFiles/camultiplex.dir/src/helper.cpp.o
 devel/lib/libcamultiplex.so: CMakeFiles/camultiplex.dir/src/counter.cpp.o
-devel/lib/libcamultiplex.so: CMakeFiles/camultiplex.dir/src/source_nodelet.cpp.o
 devel/lib/libcamultiplex.so: CMakeFiles/camultiplex.dir/build.make
 devel/lib/libcamultiplex.so: /opt/ros/kinetic/lib/libcv_bridge.so
 devel/lib/libcamultiplex.so: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_core3.so.3.3.1
@@ -254,7 +269,7 @@ devel/lib/libcamultiplex.so: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_obj
 devel/lib/libcamultiplex.so: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_imgproc3.so.3.3.1
 devel/lib/libcamultiplex.so: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_core3.so.3.3.1
 devel/lib/libcamultiplex.so: CMakeFiles/camultiplex.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX shared library devel/lib/libcamultiplex.so"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX shared library devel/lib/libcamultiplex.so"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/camultiplex.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

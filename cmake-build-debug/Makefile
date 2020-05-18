@@ -1138,6 +1138,36 @@ src/source_base.cpp.s:
 	$(MAKE) -f CMakeFiles/camultiplex.dir/build.make CMakeFiles/camultiplex.dir/src/source_base.cpp.s
 .PHONY : src/source_base.cpp.s
 
+src/source_independent.o: src/source_independent.cpp.o
+
+.PHONY : src/source_independent.o
+
+# target to build an object file
+src/source_independent.cpp.o:
+	$(MAKE) -f CMakeFiles/independent_source.dir/build.make CMakeFiles/independent_source.dir/src/source_independent.cpp.o
+	$(MAKE) -f CMakeFiles/camultiplex.dir/build.make CMakeFiles/camultiplex.dir/src/source_independent.cpp.o
+.PHONY : src/source_independent.cpp.o
+
+src/source_independent.i: src/source_independent.cpp.i
+
+.PHONY : src/source_independent.i
+
+# target to preprocess a source file
+src/source_independent.cpp.i:
+	$(MAKE) -f CMakeFiles/independent_source.dir/build.make CMakeFiles/independent_source.dir/src/source_independent.cpp.i
+	$(MAKE) -f CMakeFiles/camultiplex.dir/build.make CMakeFiles/camultiplex.dir/src/source_independent.cpp.i
+.PHONY : src/source_independent.cpp.i
+
+src/source_independent.s: src/source_independent.cpp.s
+
+.PHONY : src/source_independent.s
+
+# target to generate assembly for a file
+src/source_independent.cpp.s:
+	$(MAKE) -f CMakeFiles/independent_source.dir/build.make CMakeFiles/independent_source.dir/src/source_independent.cpp.s
+	$(MAKE) -f CMakeFiles/camultiplex.dir/build.make CMakeFiles/camultiplex.dir/src/source_independent.cpp.s
+.PHONY : src/source_independent.cpp.s
+
 src/source_nodelet.o: src/source_nodelet.cpp.o
 
 .PHONY : src/source_nodelet.o
@@ -1258,6 +1288,9 @@ help:
 	@echo "... src/source_base.o"
 	@echo "... src/source_base.i"
 	@echo "... src/source_base.s"
+	@echo "... src/source_independent.o"
+	@echo "... src/source_independent.i"
+	@echo "... src/source_independent.s"
 	@echo "... src/source_nodelet.o"
 	@echo "... src/source_nodelet.i"
 	@echo "... src/source_nodelet.s"

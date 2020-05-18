@@ -83,9 +83,22 @@ CMakeFiles/independent_source.dir/src/source_base.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/independent_source.dir/src/source_base.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nvidia/catkin_ws/src/camultiplex/src/source_base.cpp -o CMakeFiles/independent_source.dir/src/source_base.cpp.s
 
+CMakeFiles/independent_source.dir/src/source_independent.cpp.o: CMakeFiles/independent_source.dir/flags.make
+CMakeFiles/independent_source.dir/src/source_independent.cpp.o: ../src/source_independent.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/independent_source.dir/src/source_independent.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/independent_source.dir/src/source_independent.cpp.o -c /home/nvidia/catkin_ws/src/camultiplex/src/source_independent.cpp
+
+CMakeFiles/independent_source.dir/src/source_independent.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/independent_source.dir/src/source_independent.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/nvidia/catkin_ws/src/camultiplex/src/source_independent.cpp > CMakeFiles/independent_source.dir/src/source_independent.cpp.i
+
+CMakeFiles/independent_source.dir/src/source_independent.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/independent_source.dir/src/source_independent.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/nvidia/catkin_ws/src/camultiplex/src/source_independent.cpp -o CMakeFiles/independent_source.dir/src/source_independent.cpp.s
+
 CMakeFiles/independent_source.dir/src/helper.cpp.o: CMakeFiles/independent_source.dir/flags.make
 CMakeFiles/independent_source.dir/src/helper.cpp.o: ../src/helper.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/independent_source.dir/src/helper.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/independent_source.dir/src/helper.cpp.o"
 	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/independent_source.dir/src/helper.cpp.o -c /home/nvidia/catkin_ws/src/camultiplex/src/helper.cpp
 
 CMakeFiles/independent_source.dir/src/helper.cpp.i: cmake_force
@@ -100,6 +113,7 @@ CMakeFiles/independent_source.dir/src/helper.cpp.s: cmake_force
 independent_source_OBJECTS = \
 "CMakeFiles/independent_source.dir/src/run_source_independent.cpp.o" \
 "CMakeFiles/independent_source.dir/src/source_base.cpp.o" \
+"CMakeFiles/independent_source.dir/src/source_independent.cpp.o" \
 "CMakeFiles/independent_source.dir/src/helper.cpp.o"
 
 # External object files for target independent_source
@@ -107,6 +121,7 @@ independent_source_EXTERNAL_OBJECTS =
 
 devel/lib/camultiplex/independent_source: CMakeFiles/independent_source.dir/src/run_source_independent.cpp.o
 devel/lib/camultiplex/independent_source: CMakeFiles/independent_source.dir/src/source_base.cpp.o
+devel/lib/camultiplex/independent_source: CMakeFiles/independent_source.dir/src/source_independent.cpp.o
 devel/lib/camultiplex/independent_source: CMakeFiles/independent_source.dir/src/helper.cpp.o
 devel/lib/camultiplex/independent_source: CMakeFiles/independent_source.dir/build.make
 devel/lib/camultiplex/independent_source: /opt/ros/kinetic/lib/libcv_bridge.so
@@ -209,7 +224,7 @@ devel/lib/camultiplex/independent_source: /opt/ros/kinetic/lib/x86_64-linux-gnu/
 devel/lib/camultiplex/independent_source: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_imgproc3.so.3.3.1
 devel/lib/camultiplex/independent_source: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_core3.so.3.3.1
 devel/lib/camultiplex/independent_source: CMakeFiles/independent_source.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable devel/lib/camultiplex/independent_source"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable devel/lib/camultiplex/independent_source"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/independent_source.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

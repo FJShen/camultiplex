@@ -1042,6 +1042,10 @@
 			<Option target="independent_source"/>
 			<Option target="camultiplex"/>
 		</Unit>
+		<Unit filename="/home/nvidia/catkin_ws/src/camultiplex/src/source_independent.cpp">
+			<Option target="independent_source"/>
+			<Option target="camultiplex"/>
+		</Unit>
 		<Unit filename="/home/nvidia/catkin_ws/src/camultiplex/src/source_nodelet.cpp">
 			<Option target="camultiplex"/>
 		</Unit>

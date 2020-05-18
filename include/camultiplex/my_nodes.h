@@ -118,15 +118,7 @@ namespace camera {
             selfInit();
         }
 
-        virtual ~source_independent() {
-            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
-            rhp.deleteParam("diversity");
-            rhp.deleteParam("FPS");
-            rhp.deleteParam("align");
-
-            ros::NodeHandle &rh = getMyNodeHandle();
-            rh.deleteParam("rs_start_time");
-        }
+        virtual ~source_independent();
 
     private:
         ros::NodeHandle nh;
@@ -135,18 +127,11 @@ namespace camera {
     protected:
         //equivalent of method void nodelet::Nodelet::onInit(), but since source_independent is not dereived from Nodelet
         //we just have to call selfInit() in constructor
-        void selfInit() {
-            initialize();
-            std::cout << ("Camera independent source node onInit called\n");
-        }
+        void selfInit();
 
-        virtual ros::NodeHandle &getMyNodeHandle() override {
-            return nh;
-        }
+        virtual ros::NodeHandle &getMyNodeHandle() override;
 
-        virtual ros::NodeHandle &getMyPrivateNodeHandle() override {
-            return nph;
-        }
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() override;
 
         virtual void timerCallback(const ros::TimerEvent &event) override;
 
