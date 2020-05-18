@@ -1,7 +1,7 @@
 
 #IDE files
-./.idea/*
-./cmake*/*
+.idea/*
+cmake*/*
 
 # C++ files
 # Prerequisites
