@@ -114,7 +114,7 @@ namespace camera {
 
     class source_independent : public source_base {
     public:
-        source_independent() : nph("source") {
+        source_independent() {
             selfInit();
         }
 
@@ -171,13 +171,15 @@ namespace camera {
 
         void drain_rgb_callback(const sensor_msgs::Image::ConstPtr &msg, int);
 
-        virtual void timerCallback(const ros::TimerEvent &event) = 0;
+        void timerCallback(const ros::TimerEvent &event);
 
         virtual drain_base &define_subscribers();
 
         virtual drain_base &create_directories();
 
         virtual drain_base &save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
+    
+        void initialize();
     };
 
 
@@ -191,21 +193,11 @@ namespace camera {
             return getMTPrivateNodeHandle();
         }
 
-        virtual void timerCallback(const ros::TimerEvent &event) override;
 
     public:
         //drain_nodelet::onInit is override to nodelet::Nodelet::onInit
         virtual void onInit() override {
-
-            //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
-            ros::NodeHandle &rh = getMyNodeHandle();
-            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
-
-            define_subscribers();
-            create_directories();
-
-            timer = rh.createTimer(ros::Duration(5), &drain_nodelet::timerCallback, this);
-
+            initialize();
             NODELET_INFO("Camera drain node onInit called\n");
         }
 
@@ -221,7 +213,7 @@ namespace camera {
 
     class drain_independent : public drain_base {
     public:
-        drain_independent() : nph("drain") {
+        drain_independent() {
             selfInit();
         }
 
@@ -240,16 +232,8 @@ namespace camera {
         //equivalent of method void nodelet::Nodelet::onInit(), but since source_independent is not dereived from Nodelet
         //we just have to call selfInit() in constructor
         void selfInit() {
-
-            //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
-            ros::NodeHandle &rh = getMyNodeHandle();
-            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
-
-            define_subscribers();
-            create_directories();
-
-            timer = rh.createTimer(ros::Duration(5), &drain_independent::timerCallback, this);
-
+            nph = ros::NodeHandle(ros::this_node::getName());
+            initialize();
             std::cout << ("Camera independent drain node selfInit called\n");
         }
 
@@ -262,7 +246,6 @@ namespace camera {
             return nph;
         }
 
-        virtual void timerCallback(const ros::TimerEvent &event) override;
     };
 
 

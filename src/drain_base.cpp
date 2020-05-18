@@ -11,29 +11,9 @@
 #include <boost/filesystem.hpp>
 #include <ctime>
 
-boost::mutex mutex;
-
 namespace camera {
 
-
-    /*  void drain_base::onInit(){
-
-      //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
-      ros::NodeHandle& rh = getMTNodeHandle();
-      ros::NodeHandle& rhp = getMTPrivateNodeHandle();
-
-      this->define_subscribers()
-          .create_directories();
-
-      timer = rh.createTimer(ros::Duration(5), &drain::timerCallback, this);
-
-      NODELET_INFO("Camera drain node onInit called\n");
-      }
-      }
-  */
-
     drain_base::~drain_base() {
-//	NODELET_INFO("camera drain node destructed\n");
         std::cout << ("camera drain node base destructed\n");
     }
 
@@ -95,27 +75,7 @@ namespace camera {
 //        NODELET_DEBUG_STREAM("saved rgb frame" << (msg->header.frame_id));
 //        std::cout << "saved rgb frame" << (msg->header.frame_id) << "\n";
     }
-
-
-    void drain_nodelet::timerCallback(const ros::TimerEvent &event) {
-//	NODELET_WARN_STREAM_NAMED("drain_camera","Drain: Depth received "<<depth_counter.getCurrentSeq()<<" frames, total loss estimate is "<<depth_counter.getLoss()<<" frames\n");
-//	NODELET_WARN_STREAM_NAMED("drain_camera","Drain: RGB received "<<rgb_counter.getCurrentSeq()<<" frames, total loss estimate is "<<rgb_counter.getLoss()<<" frames\n");
-        std::cout << "Drain: Depth received " << depth_counter.getCurrentSeq() << " frames, total loss estimate is "
-                  << depth_counter.getLoss() << " frames\n";
-        std::cout << "Drain: RGB received " << rgb_counter.getCurrentSeq() << " frames, total loss estimate is "
-                  << rgb_counter.getLoss() << " frames\n";
-    }
-
-    void drain_independent::timerCallback(const ros::TimerEvent &event) {
-//	NODELET_WARN_STREAM_NAMED("drain_camera","Drain: Depth received "<<depth_counter.getCurrentSeq()<<" frames, total loss estimate is "<<depth_counter.getLoss()<<" frames\n");
-//	NODELET_WARN_STREAM_NAMED("drain_camera","Drain: RGB received "<<rgb_counter.getCurrentSeq()<<" frames, total loss estimate is "<<rgb_counter.getLoss()<<" frames\n");
-        std::cout << "Drain: Depth received " << depth_counter.getCurrentSeq() << " frames, total loss estimate is "
-                  << depth_counter.getLoss() << " frames\n";
-        std::cout << "Drain: RGB received " << rgb_counter.getCurrentSeq() << " frames, total loss estimate is "
-                  << rgb_counter.getLoss() << " frames\n";
-    }
-
-
+    
     drain_base &
     drain_base::save_image(cv_bridge::CvImageConstPtr cv_const_ptr, std_msgs::Header header, unsigned int channel) {
 
@@ -207,6 +167,8 @@ namespace camera {
 //	ros::NodeHandle& rhp = getMTPrivateNodeHandle();
         ros::NodeHandle &rh = getMyNodeHandle();
         ros::NodeHandle &rhp = getMyPrivateNodeHandle();
+        
+        std::cout<<"this_node::get_name= "<<ros::this_node::getName()<<"\n";
 
         if (!rhp.getParam("diversity", N)) {
 //	    NODELET_WARN_STREAM_NAMED("camera drain", "No parameter for drain channel diversity specified, will use default value: "<< N);
@@ -245,6 +207,24 @@ namespace camera {
 
         return *this;
     }
-
-
+    
+    void drain_base::initialize() {
+        //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
+        ros::NodeHandle &rh = getMyNodeHandle();
+        ros::NodeHandle &rhp = getMyPrivateNodeHandle();
+    
+        define_subscribers();
+        create_directories();
+    
+        timer = rh.createTimer(ros::Duration(5), &drain_base::timerCallback, this);
+    }
+    
+    void drain_base::timerCallback(const ros::TimerEvent &event) {
+        std::cout << "Drain: Depth received " << depth_counter.getCurrentSeq() << " frames, total loss estimate is "
+                  << depth_counter.getLoss() << " frames\n";
+        std::cout << "Drain: RGB received " << rgb_counter.getCurrentSeq() << " frames, total loss estimate is "
+                  << rgb_counter.getLoss() << " frames\n";
+    }
+    
+    
 }
