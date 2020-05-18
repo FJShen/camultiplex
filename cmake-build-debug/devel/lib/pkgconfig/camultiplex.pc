@@ -1,8 +1,0 @@
-prefix=/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/devel
-
-Name: camultiplex
-Description: Description of camultiplex
-Version: 0.0.0
-Cflags: -I/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/devel/include
-Libs: -L/home/nvidia/catkin_ws/src/camultiplex/cmake-build-debug/devel/lib 
-Requires: cv_bridge nodelet pluginlib roscpp sensor_msgs std_msgs message_runtime

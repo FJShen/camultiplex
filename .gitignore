@@ -1,7 +1,7 @@
 
 #IDE files
 .idea/*
-cmake-build-*/*
+./cmake-build-*/*
 
 # C++ files
 # Prerequisites
