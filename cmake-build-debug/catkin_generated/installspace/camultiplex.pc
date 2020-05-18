@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: camultiplex
+Description: Description of camultiplex
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: cv_bridge nodelet pluginlib roscpp sensor_msgs std_msgs message_runtime

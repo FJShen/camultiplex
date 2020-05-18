@@ -135,6 +135,7 @@ include_directories(
 #The library name should be the same as defined in the xml file
 add_library(camultiplex
         src/source_base.cpp
+        src/source_nodelet.cpp
         src/drain_base.cpp
         src/export_so_library.cpp
         src/helper.cpp

@@ -30,7 +30,6 @@ namespace camera {
         friend class nodelet::Nodelet;
 
     public:
-
         source_base()
         {
             std::cout << "camera source base node constructed\n";
@@ -99,33 +98,18 @@ namespace camera {
 
     class source_nodelet : public source_base, public nodelet::Nodelet {
     protected:
-        virtual ros::NodeHandle &getMyNodeHandle() override {
-            return getMTNodeHandle();
-        }
+        virtual ros::NodeHandle &getMyNodeHandle() override;
 
-        virtual ros::NodeHandle &getMyPrivateNodeHandle() override {
-            return getMTPrivateNodeHandle();
-        }
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() override;
 
         //callback function that transmits frames to the topics
         virtual void timerCallback(const ros::TimerEvent &event) override;
 
     public:
         //onInit is an override of nodelet::Nodelet::onInit()
-        virtual void onInit() override {
-            initialize();
-            std::cout << ("Camera source node nodelet onInit called\n");
-        }
+        virtual void onInit() override;
 
-        virtual ~source_nodelet() {
-            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
-            rhp.deleteParam("diversity");
-            rhp.deleteParam("FPS");
-            rhp.deleteParam("align");
-            
-            ros::NodeHandle &rh = getMyNodeHandle();
-            rh.deleteParam("rs_start_time");
-        }
+        virtual ~source_nodelet();
     };
 
     class source_independent : public source_base {
