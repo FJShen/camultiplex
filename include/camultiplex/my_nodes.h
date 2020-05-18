@@ -232,7 +232,7 @@ namespace camera {
         //equivalent of method void nodelet::Nodelet::onInit(), but since source_independent is not dereived from Nodelet
         //we just have to call selfInit() in constructor
         void selfInit() {
-            nph = ros::NodeHandle(ros::this_node::getName());
+            nph = ros::NodeHandle(ros::this_node::getName()); //assign the name of this node to nph, everything that nph have access to is in the private namespace of this node
             initialize();
             std::cout << ("Camera independent drain node selfInit called\n");
         }
