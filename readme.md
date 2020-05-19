@@ -12,6 +12,14 @@ To solve this problem, I create multiple topics, and rotationally send messages 
 Based on observation, two channels shall be enough for 60 FPS 640*480 pixel resolution.  
 
 ***
+## Dependencies
+ROS & catkin
+
+Boost::thread, Boost::filesystem, Boost::chrono
+
+OpenCV
+
+***
 
 ## Compilation of code
 <pre>
@@ -118,7 +126,7 @@ When running a set of nodes that span across a network (e.g. LAN) who need to sh
 
 Suppose we have two hosts (computers): H1 and H2; we want the master to be run on H1:
 
-1. On H1 and H2 separately **export ROS_IP=own_ip_address** (this might not be needed)
+1. On H1 and H2 separately **export ROS_IP=own_ip_address** (this step might not be needed)
 
 2. On H2 **export ROS_MASTER_URI=http://*h1_ip_addr*:11311**. 
 
@@ -131,6 +139,14 @@ Note: When running a network of ROS nodes on different hosts, nodelets will not 
 ***
 
 ## Table of Parameters
+| Parameter        | Type   | User configurable? | Where to configure                              | Usage                                    |
+|------------------|--------|--------------------|-------------------------------------------------|------------------------------------------|
+| *drain*/diversity  | int    | Yes                | Drain side                                      | Number of threads that a drain uses      |
+| *drain*/base_path  | string | Yes                | Drain side                                      | Path for the drain to store images       |
+| *source*/diversity | int    | Yes                | Source side                                     | Number of threads that a source uses     |
+| *source*/FPS       | int    | Yes                | Source side                                     | Frames-per-second of the camera          |
+| *source*/align     | bool   | Yes                | Source side                                     | Align depth image to RGB image           |
+| /rs_start_time   | string | No                 | Global parameter set by  source node at runtime | Unix time of when the camera was started |
 
 
 
