@@ -5,71 +5,38 @@
 #include <nodelet/nodelet.h>
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/image_encodings.h"
-#include <boost/filesystem.hpp>
 
 #include <boost/thread.hpp>
 #include <vector>
 
 
 namespace camera {
-
-
-/*    void source_base::onInit(){
-	
-	//getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
-	ros::NodeHandle& rh = getMTNodeHandle();
-	ros::NodeHandle& rph = getMTPrivateNodeHandle();
-
-	this->define_publishers()
-	    .init_camera()
-	    .setParamTimeOfStart();
-
-	for(int i=0; i<N; i++){
-	    align_to_color.emplace_back(RS2_STREAM_COLOR);
-	}
-
-	//use timer to trigger callback
-
-  timer = rh.createTimer(ros::Duration(1/FPS), &source_base::timerCallback, this, true);
-
-	std::cout<<("Camera source node onInit called\n");
+    
+    source_base::source_base():
+    depth_pub(nullptr), rgb_pub(nullptr)
+    {
+        std::cout << "camera source base node constructed\n";
     }
-*/
-
-    void source_nodelet::timerCallback(const ros::TimerEvent &event) {
-
-        //define lambda which will be launched in parallel
-        auto f = [&]() {
-            try {
-                while (1) { this->parallelAction(); }
+    
+    
+    source_base::~source_base() {
+        for (auto &x : thread_list) {
+            if (x.get_id() != boost::thread::id()) {
+                x.interrupt();
             }
-            catch (boost::thread_interrupted &) {
-                return;
-            }
-        };
-
-        for (int i = 0; i < N; i++) {
-            thread_list.emplace_back(f);
         }
-    }
-
-    void source_independent::timerCallback(const ros::TimerEvent &event) {
-
-        //define lambda which will be launched in parallel
-        auto f = [&]() {
-            try {
-                while (1) { this->parallelAction(); }
+        
+        for (auto &x : thread_list) {
+            if (!x.try_join_for(boost::chrono::milliseconds(100))) {
+                std::cerr << ("failed to join a thread\n");
             }
-            catch (boost::thread_interrupted &) {
-                return;
-            }
-        };
-
-        for (int i = 0; i < N; i++) {
-            thread_list.emplace_back(f);
         }
-    }
-
+        
+        p.stop();
+        delete[] depth_pub;
+        delete[] rgb_pub;
+        std::cout << ("camera source base node destrcuted\n");
+    };
 
     void source_base::parallelAction() {
 
@@ -293,5 +260,21 @@ namespace camera {
     
         timer = rh.createTimer(ros::Duration(1 / FPS), &source_base::timerCallback, this, true);
     }
-
+    
+    void source_base::timerCallback(const ros::TimerEvent &event) {
+        
+        //define lambda which will be launched in parallel
+        auto f = [&]() {
+            try {
+                while (1) { this->parallelAction(); }
+            }
+            catch (boost::thread_interrupted &) {
+                return;
+            }
+        };
+        
+        for (int i = 0; i < N; i++) {
+            thread_list.emplace_back(f);
+        }
+    }
 }

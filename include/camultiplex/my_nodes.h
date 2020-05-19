@@ -30,32 +30,9 @@ namespace camera {
         friend class nodelet::Nodelet;
 
     public:
+        source_base();
 
-        source_base()
-        {
-            std::cout << "camera source base node constructed\n";
-        };
-
-        virtual ~source_base() {
-            for (auto &x : thread_list) {
-                if (x.get_id() != boost::thread::id()) {
-                    x.interrupt();
-                }
-            }
-    
-            for (auto &x : thread_list) {
-                if (!x.try_join_for(boost::chrono::milliseconds(100))) {
-                    std::cerr << ("failed to join a thread\n");
-                }
-            }
-    
-            p.stop();
-            delete[] depth_pub;
-            delete[] rgb_pub;
-            std::cout << ("camera source base node destrcuted\n");
-        };
-
-        //virtual void onInit();//mandatory initialization function for all nodelets
+        virtual ~source_base();
 
     protected:
         ros::Publisher *depth_pub;
@@ -89,7 +66,7 @@ namespace camera {
 
         void parallelAction();
 
-        virtual void timerCallback(const ros::TimerEvent &event) = 0;
+        void timerCallback(const ros::TimerEvent &event);
 
         source_base &setParamTimeOfStart();
         
@@ -99,50 +76,24 @@ namespace camera {
 
     class source_nodelet : public source_base, public nodelet::Nodelet {
     protected:
-        virtual ros::NodeHandle &getMyNodeHandle() override {
-            return getMTNodeHandle();
-        }
+        virtual ros::NodeHandle &getMyNodeHandle() override;
 
-        virtual ros::NodeHandle &getMyPrivateNodeHandle() override {
-            return getMTPrivateNodeHandle();
-        }
-
-        //callback function that transmits frames to the topics
-        virtual void timerCallback(const ros::TimerEvent &event) override;
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() override;
 
     public:
         //onInit is an override of nodelet::Nodelet::onInit()
-        virtual void onInit() override {
-            initialize();
-            std::cout << ("Camera source node nodelet onInit called\n");
-        }
+        virtual void onInit() override;
 
-        virtual ~source_nodelet() {
-            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
-            rhp.deleteParam("diversity");
-            rhp.deleteParam("FPS");
-            rhp.deleteParam("align");
-            
-            ros::NodeHandle &rh = getMyNodeHandle();
-            rh.deleteParam("rs_start_time");
-        }
+        virtual ~source_nodelet();
     };
 
     class source_independent : public source_base {
     public:
-        source_independent() : nph("source") {
+        source_independent() {
             selfInit();
         }
 
-        virtual ~source_independent() {
-            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
-            rhp.deleteParam("diversity");
-            rhp.deleteParam("FPS");
-            rhp.deleteParam("align");
-
-            ros::NodeHandle &rh = getMyNodeHandle();
-            rh.deleteParam("rs_start_time");
-        }
+        virtual ~source_independent();
 
     private:
         ros::NodeHandle nh;
@@ -151,20 +102,11 @@ namespace camera {
     protected:
         //equivalent of method void nodelet::Nodelet::onInit(), but since source_independent is not dereived from Nodelet
         //we just have to call selfInit() in constructor
-        void selfInit() {
-            initialize();
-            std::cout << ("Camera independent source node onInit called\n");
-        }
+        void selfInit();
 
-        virtual ros::NodeHandle &getMyNodeHandle() override {
-            return nh;
-        }
+        virtual ros::NodeHandle &getMyNodeHandle() override;
 
-        virtual ros::NodeHandle &getMyPrivateNodeHandle() override {
-            return nph;
-        }
-
-        virtual void timerCallback(const ros::TimerEvent &event) override;
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() override;
 
     };
 
@@ -172,7 +114,9 @@ namespace camera {
     class drain_base {
     public:
 
-        drain_base() {
+        drain_base():
+        depth_sub(nullptr), rgb_sub(nullptr)
+        {
 //            NODELET_INFO("camera drain node constructed\n");
             std::cout << ("camera drain node base constructed\n");
         };
@@ -202,67 +146,39 @@ namespace camera {
 
         void drain_rgb_callback(const sensor_msgs::Image::ConstPtr &msg, int);
 
-        virtual void timerCallback(const ros::TimerEvent &event) = 0;
+        void timerCallback(const ros::TimerEvent &event);
 
         virtual drain_base &define_subscribers();
 
         virtual drain_base &create_directories();
 
         virtual drain_base &save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
+    
+        void initialize();
     };
 
 
     class drain_nodelet : public drain_base, public nodelet::Nodelet {
-    private:
-        virtual ros::NodeHandle &getMyNodeHandle() override {
-            return getMTNodeHandle();
-        }
+    protected:
+        virtual ros::NodeHandle &getMyNodeHandle() override;
 
-        virtual ros::NodeHandle &getMyPrivateNodeHandle() override {
-            return getMTPrivateNodeHandle();
-        }
-
-        virtual void timerCallback(const ros::TimerEvent &event) override;
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() override;
 
     public:
         //drain_nodelet::onInit is override to nodelet::Nodelet::onInit
-        virtual void onInit() override {
+        virtual void onInit() override;
 
-            //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
-            ros::NodeHandle &rh = getMyNodeHandle();
-            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
-
-            define_subscribers();
-            create_directories();
-
-            timer = rh.createTimer(ros::Duration(5), &drain_nodelet::timerCallback, this);
-
-            NODELET_INFO("Camera drain node onInit called\n");
-        }
-
-        virtual ~drain_nodelet() {
-            delete[] depth_sub;
-            delete[] rgb_sub;
-            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
-            rhp.deleteParam("diversity");
-            rhp.deleteParam("base_path");
-        }
+        virtual ~drain_nodelet();
 
     };
 
     class drain_independent : public drain_base {
     public:
-        drain_independent() : nph("drain") {
+        drain_independent() {
             selfInit();
         }
 
-        virtual ~drain_independent() {
-            delete[] depth_sub;
-            delete[] rgb_sub;
-            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
-            rhp.deleteParam("diversity");
-            rhp.deleteParam("base_path");
-        }
+        virtual ~drain_independent();
 
     private:
         ros::NodeHandle nh;
@@ -270,30 +186,13 @@ namespace camera {
 
         //equivalent of method void nodelet::Nodelet::onInit(), but since source_independent is not dereived from Nodelet
         //we just have to call selfInit() in constructor
-        void selfInit() {
-
-            //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
-            ros::NodeHandle &rh = getMyNodeHandle();
-            ros::NodeHandle &rhp = getMyPrivateNodeHandle();
-
-            define_subscribers();
-            create_directories();
-
-            timer = rh.createTimer(ros::Duration(5), &drain_independent::timerCallback, this);
-
-            std::cout << ("Camera independent drain node selfInit called\n");
-        }
+        void selfInit();
 
     protected:
-        virtual ros::NodeHandle &getMyNodeHandle() override {
-            return nh;
-        }
+        virtual ros::NodeHandle &getMyNodeHandle() override;
 
-        virtual ros::NodeHandle &getMyPrivateNodeHandle() override {
-            return nph;
-        }
+        virtual ros::NodeHandle &getMyPrivateNodeHandle() override;
 
-        virtual void timerCallback(const ros::TimerEvent &event) override;
     };
 
 

@@ -2,7 +2,7 @@
   <node pkg="camultiplex" type="independent_source" name="source" output="screen">
 
     <param name="diversity" type="int" value="2" />
-    <param name="FPS" type="int" value="60" />
+    <param name="FPS" type="int" value="30" />
     <param name="align" type="bool" value="false" />
 
   </node>
