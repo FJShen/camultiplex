@@ -222,18 +222,11 @@ namespace camera {
     }
     
     void drain_base::timerCallback(const ros::TimerEvent &event) {
-        std::cout << "Drain: Depth received " << depth_counter.getCurrentSeq() << " frames, total loss estimate is "
+        std::cout << "Drain: Depth received " << depth_counter.getCurrentSeq() << " frames, total transmission loss estimate is "
                   << depth_counter.getLoss() << " frames\n";
-        std::cout << "Drain: RGB received " << rgb_counter.getCurrentSeq() << " frames, total loss estimate is "
+        std::cout << "Drain: RGB received " << rgb_counter.getCurrentSeq() << " frames, total transmission loss estimate is "
                   << rgb_counter.getLoss() << " frames\n";
     }
-    
-//    void drain_independent::timerCallback(const ros::TimerEvent &event) {
-//        std::cout << "Drain: Depth received " << depth_counter.getCurrentSeq() << " frames, total loss estimate is "
-//                  << depth_counter.getLoss() << " frames\n";
-//        std::cout << "Drain: RGB received " << rgb_counter.getCurrentSeq() << " frames, total loss estimate is "
-//                  << rgb_counter.getLoss() << " frames\n";
-//    }
     
     
 }
