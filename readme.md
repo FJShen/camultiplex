@@ -11,10 +11,107 @@ Based on observation, two channels shall be enough for 60 FPS 640*480 pixel reso
 
 ***
 
-# Command Line method
-## bring up nodelet manager
-rosrun nodelet nodelet manager \__name:=nodelet_manager
-## bring up camera drain
-rosrun nodelet nodelet load camultiplex/drain nodelet_manager _diversity:=2
-## bring up camera source
-rosrun nodelet nodelet load camultiplex/source nodelet_manager _diversity:=2
+## Compilation of code
+<pre>
+cd <i>your_catkin_workspace_directory</i>/src
+git clone http://github.com/FJShen/camultiplex
+git checkout master
+
+cd <i>your_catkin_workspace_directory</i>
+catkin_make --pkg camultiplex
+</pre>
+
+This is what your directory should typically look like (note that before you call catkin_make, 'src' might be the only directory that you see in the workspace):
+
+<pre>
+nvidia@virtual-ubuntu:~/catkin_ws$ tree -L 2
+.
+├── build
+│   └── <i>Some files</i>
+├── devel
+│   └── <i>Some files</i>
+├── install
+│   └── <i>Some files</i>
+└── src
+    ├──<b> camultiplex </b>
+    └──<i> other packets </i>
+</pre>
+
+***
+
+## Execution of nodes
+
+### I.  Nodelets mode
+#### Launchfile method (roslaunch)
+**1. bring up everything at once**
+```
+roslaunch camultiplex launch_everything.launch
+```
+You need to configure the parameters in the files ```./launch/source.launch``` and ```./launch/drain.launch``` respectively.
+
+By your calling ```roslaunch```, ```roscore``` is automatically called.
+
+#### Command Line method (rosrun)
+**1. summon the master**
+```
+roscore
+```
+**2. bring up nodelet manager**
+```
+rosrun nodelet nodelet manager __name:=nodelet_manager
+```
+**3. load camera drain as a nodelet to be managed by nodelet_manager**
+
+```
+rosrun nodelet nodelet load camultiplex/drain nodelet_manager _diversity:=2 _base_path:="/media/nvidia/ExtremeSSD"
+```
+
+**4 load camera source as a nodelet to be managed by nodelet_manager**
+```
+rosrun nodelet nodelet load camultiplex/source nodelet_manager _diversity:=2 _FPS:=60 _align:=true
+```
+### II. Independent nodes mode
+#### Command Line method (rosrun)
+**1. summon the master**
+```
+roscore
+```
+
+**2. bring up camera drain**
+
+```
+rosrun camultiplex independent_drain _diversity:=2 _base_path:="/media/nvidia/ExtremeSSD"
+```
+
+**3. bring up camera source**
+```
+rosrun camultiplex independent_source _diversity:=2 _FPS:=60 _align:=true
+```
+
+#### Launchfile method (roslaunch)
+**1. bring up camera drain**
+
+```
+roslaunch camultiplex independent_drain.launch
+```
+
+**2. bring up camera source**
+
+```
+roslaunch camultiplex independent_source.launch
+```
+
+You need to configure the parameters in the files ```./launch/independent_source.launch``` and ```./launch/ independent_drain.launch``` respectively.
+
+By your calling ```roslaunch```, ```roscore``` is automatically called.
+
+#### *Running nodes on different hosts in LAN
+
+***
+
+## Table of Parameters
+
+
+
+
+
