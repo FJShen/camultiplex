@@ -1,3 +1,5 @@
+The format of this markdown file is best manifested when the file is rendered in HTML format.
+
 # camultiplex
 This project is developed in catkin workspace, aimed at utilizing **multi-thread processing** while taking advantage from the `nodelet`. Data are sent via **channel diversity** on the granularity of messages. 
 
@@ -106,6 +108,15 @@ You need to configure the parameters in the files ```./launch/independent_source
 By your calling ```roslaunch```, ```roscore``` is automatically called.
 
 #### *Running nodes on different hosts in LAN
+When running a set of nodes that span across a network (e.g. LAN) who need to share information by publishing/subscribing to topics, ```roscore``` only need to be called on one host (i.e. there is only one master in the network). 
+
+Suppose we have two hosts: H1 and H2. The master is going to be run on H1:
+
+1. On H1 and H2 separately **export ROS_IP=own_ip_address** (this might not be needed)
+
+2. On H2 **export ROS_MASTER_URI=http://h1_ip_addr:11311**. Call ```roscore``` on H1.
+
+4. On H1 and H2 separately launch ROS nodes. Message will be transmitted in the form of TCP (or UDP) packets. 
 
 ***
 
