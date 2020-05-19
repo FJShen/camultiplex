@@ -1,9 +1,8 @@
 #ifndef PIPELINE_NODELET_2__HELPER_
 #define PIPELINE_NODELET_2__HELPER_
 
-//#include <chrono>
-//#include <iostream>
 #include <string>
+#include <boost/thread.hpp>
 
 namespace helper {
 
@@ -27,6 +26,7 @@ namespace helper {
         unsigned long previous_seq;
         long int loss;
         bool first_time;
+        boost::mutex counter_mutex;
     };
 
 }
