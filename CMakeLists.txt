@@ -138,6 +138,8 @@ add_library(camultiplex
         src/source_nodelet.cpp
         src/source_independent.cpp
         src/drain_base.cpp
+        src/drain_nodelet.cpp
+        src/drain_independent.cpp
         src/export_so_library.cpp
         src/helper.cpp
         src/counter.cpp
@@ -152,10 +154,19 @@ add_library(camultiplex
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(independent_source
-        src/run_source_independent.cpp src/source_base.cpp src/source_independent.cpp src/helper.cpp)
+        src/run_source_independent.cpp
+        src/source_base.cpp
+        src/source_independent.cpp
+        src/helper.cpp
+        )
 
 add_executable(independent_drain
-        src/run_drain_independent.cpp src/drain_base.cpp src/helper.cpp src/counter.cpp)
+        src/run_drain_independent.cpp
+        src/drain_base.cpp
+        src/drain_independent.cpp
+        src/helper.cpp
+        src/counter.cpp
+        )
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

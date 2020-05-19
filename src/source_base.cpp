@@ -11,6 +11,32 @@
 
 
 namespace camera {
+    
+    source_base::source_base():
+    depth_pub(nullptr), rgb_pub(nullptr)
+    {
+        std::cout << "camera source base node constructed\n";
+    }
+    
+    
+    source_base::~source_base() {
+        for (auto &x : thread_list) {
+            if (x.get_id() != boost::thread::id()) {
+                x.interrupt();
+            }
+        }
+        
+        for (auto &x : thread_list) {
+            if (!x.try_join_for(boost::chrono::milliseconds(100))) {
+                std::cerr << ("failed to join a thread\n");
+            }
+        }
+        
+        p.stop();
+        delete[] depth_pub;
+        delete[] rgb_pub;
+        std::cout << ("camera source base node destrcuted\n");
+    };
 
     void source_base::parallelAction() {
 
@@ -234,5 +260,21 @@ namespace camera {
     
         timer = rh.createTimer(ros::Duration(1 / FPS), &source_base::timerCallback, this, true);
     }
-
+    
+    void source_base::timerCallback(const ros::TimerEvent &event) {
+        
+        //define lambda which will be launched in parallel
+        auto f = [&]() {
+            try {
+                while (1) { this->parallelAction(); }
+            }
+            catch (boost::thread_interrupted &) {
+                return;
+            }
+        };
+        
+        for (int i = 0; i < N; i++) {
+            thread_list.emplace_back(f);
+        }
+    }
 }

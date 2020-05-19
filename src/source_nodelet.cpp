@@ -1,9 +1,7 @@
 #include "camultiplex/my_nodes.h"
 #include "ros/ros.h"
 #include <nodelet/nodelet.h>
-#include <boost/thread.hpp>
 #include <iostream>
-#include <vector>
 
 namespace camera{
     
@@ -30,20 +28,4 @@ namespace camera{
         rh.deleteParam("rs_start_time");
     }
     
-    void source_nodelet::timerCallback(const ros::TimerEvent &event) {
-        
-        //define lambda which will be launched in parallel
-        auto f = [&]() {
-            try {
-                while (1) { this->parallelAction(); }
-            }
-            catch (boost::thread_interrupted &) {
-                return;
-            }
-        };
-        
-        for (int i = 0; i < N; i++) {
-            thread_list.emplace_back(f);
-        }
-    }
 }
