@@ -128,8 +128,8 @@ namespace camera {
         ros::Subscriber *rgb_sub;
         ros::Timer timer;
 
-        helper::counter depth_counter;
-        helper::counter rgb_counter;
+        helper::Counter depth_counter;
+        helper::Counter rgb_counter;
 
         std::string base_path = std::string(
                 "/media/nvidia/ExtremeSSD"); //this is the path where the folder will be created
