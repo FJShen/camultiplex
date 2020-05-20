@@ -28,14 +28,14 @@ namespace helper {
     std::string get_time_stamp_str();
     
     /**
-     * \class counter helper.h
+     * \class Counter helper.h
      * \brief Keeps track of the index of the images being received by the drain.
      *
      * The drain instance shall encapsulate two counters, one for the RGB subscriber and one for the depth subscriber.
-     * Upon receiving a new image from the source, the subscriber thread will call the counter's updateSeq method and pass it the image's index.
-     * The counter will compare the current index with the previous index and calculate the number of lost images during transmission
+     * Upon receiving a new image from the source, the subscriber thread will call Counter's updateSeq method and pass it the image's index.
+     * Counter will compare the current index with the previous index and calculate the number of lost images during transmission
      *
-     * \ref counter is thread safe.
+     * \ref Counter is thread safe.
      */
     class Counter {
     public:
