@@ -64,7 +64,7 @@ namespace camera {
         seq_lock.unlock();
 
         if (enable_align) {
-            frames = align_to_color.at(local_seq % N).process(frames);
+            frames = align_to_color.at(local_seq % diversity).process(frames);
         }
     
     
@@ -118,8 +118,8 @@ namespace camera {
         rgb_msg.encoding = sensor_msgs::image_encodings::RGB8;
         rgb_msg.step = width_color * 3;//each pixel is 3 bytes - red, green, and blue
 
-        depth_pub[local_seq % N].publish(depth_msg);
-        rgb_pub[local_seq % N].publish(rgb_msg);
+        depth_pub[local_seq % diversity].publish(depth_msg);
+        rgb_pub[local_seq % diversity].publish(rgb_msg);
 
 
         //NODELET_DEBUG_STREAM("Both streams published to " << local_seq % N << "\n");
@@ -134,17 +134,17 @@ namespace camera {
         ros::NodeHandle &rh = getMyNodeHandle();
         ros::NodeHandle &rph = getMyPrivateNodeHandle();
 
-        if (!rph.getParam("diversity", N)) {
+        if (!rph.getParam("diversity", diversity)) {
 //            NODELET_WARN_STREAM_NAMED("camera source",
 //                                      "No parameter for source channel diversity specified, will use default: " << N);
-            std::cout << "No parameter for source channel diversity specified, will use default: " << N<<"\n";
+            std::cout << "No parameter for source channel diversity specified, will use default: " << diversity << "\n";
         } else {
 //            NODELET_INFO_STREAM_NAMED("camera source", "Number of source channel diversity: " << N);
-            std::cout << "Number of source channel diversity: " << N<<"\n";
+            std::cout << "Number of source channel diversity: " << diversity << "\n";
         }
 
-        depth_pub = new(std::nothrow) ros::Publisher[N];
-        rgb_pub = new(std::nothrow) ros::Publisher[N];
+        depth_pub = new(std::nothrow) ros::Publisher[diversity];
+        rgb_pub = new(std::nothrow) ros::Publisher[diversity];
 
         if ((!depth_pub) || (!rgb_pub)) {
 //            NODELET_FATAL("Bad memory allocation for publishers\n");
@@ -154,7 +154,7 @@ namespace camera {
         //define publishers
         const std::string s_d("depth");
         const std::string s_rgb("RGB");
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < diversity; i++) {
 //            NODELET_DEBUG_STREAM_NAMED("source", "creating #" << i << " publisher");
             std::cout << "creating #" << i << " publisher\n";
             depth_pub[i] = rh.advertise<sensor_msgs::Image>(s_d + std::to_string(i), 8);
@@ -247,18 +247,32 @@ namespace camera {
         ros::NodeHandle &rh = getMyNodeHandle();
         ros::NodeHandle &rph = getMyPrivateNodeHandle();
     
-        //tentatively moved to Source_base ctor
-        define_publishers();
         init_camera();
+        define_publishers();
         setParamTimeOfStart();
     
-        for(int i=0; i<N; ++i){
+        for(int i=0; i < diversity; ++i){
             align_to_color.emplace_back(RS2_STREAM_COLOR);
         }
     
         //use timer to trigger callback
     
-        timer = rh.createTimer(ros::Duration(1 / FPS), &Source_base::timerCallback, this, true);
+        //timer = rh.createTimer(ros::Duration(1 / FPS), &Source_base::timerCallback, this, true);
+        
+        
+        //define lambda which will be launched in parallel
+        auto f = [&]() {
+            try {
+                while (1) { this->parallelAction(); }
+            }
+            catch (boost::thread_interrupted &) {
+                return;
+            }
+        };
+    
+        for (int i = 0; i < diversity; i++) {
+            thread_list.emplace_back(f);
+        }
     }
     
     void Source_base::timerCallback(const ros::TimerEvent &event) {
@@ -273,7 +287,7 @@ namespace camera {
             }
         };
         
-        for (int i = 0; i < N; i++) {
+        for (int i = 0; i < diversity; i++) {
             thread_list.emplace_back(f);
         }
     }

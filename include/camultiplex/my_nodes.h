@@ -70,37 +70,149 @@ namespace camera {
         virtual ~Source_base();
     
     protected:
-        ros::Publisher* depth_pub;
-        ros::Publisher* rgb_pub;
-        ros::Publisher T_pub;
-        ros::Timer timer;
-        
-        boost::mutex seq_mutex;
-        
-        std::vector<rs2::align> align_to_color;
-        std::vector<boost::thread> thread_list;
-        
-        bool enable_align = false;
-        
-        int N = 1; //> Default number of channel diversity
-        int FPS = camera::Default_FPS; //> Default FPS value
-        uint32_t seq = 0;
-        
-        //rs2::frameset frames;
-        rs2::pipeline p;
-        rs2::config c;
-        
         //virtual function to fetch node handle and private node handle
         virtual ros::NodeHandle& getMyNodeHandle() = 0;
         
         virtual ros::NodeHandle& getMyPrivateNodeHandle() = 0;
-    
+        
         /**
-         * \brief Define the publishers, initialize the camera, and kick start the threads
+         * \brief Initialize and start the source node.
+         *
+         * This method obtains the parameters (FPS, align, diversity) from ROS parameter server and does the following in order:
+         * 1. Start the camera with the required FPS and alignment setting
+         * 2. Populate rgb_pub and depth_pub with the required amount of publishers
+         * 3. Set up a new parameter called "rs_start_time". The drain node will have access to this parameter, though it is currently not utilized.
+         * 4. Instantiate matching number of alignment proessing blocks and put into the vector \ref align_to_color
+         * 5. Start the timer.
          *
          * Although what this method does is the same for both derived classes of source_base,
+         * due to the fact that \ref initialize needs to call \ref getMyNodeHandle and \ref getMyPrivateNodeHandle,
+         * which are both pure virtual functions, source_base cannot call \ref initialize within its own constructor.
+         * It has to be called by the derived classes.
+         *
+         * What the timer does is
          */
         void initialize();
+    
+    
+    private:
+        /**
+         * \brief Dynamical array for depth publishers
+         *
+         * Will be allocated memory when Source_base::initialize is called. Memory freed in destructor.
+         *
+         * Raw pointers are prone to memory leakage and illegal access. Shall be safer if std::vector is used.
+         */
+        ros::Publisher* depth_pub;
+        
+        /**
+         * \brief Dynamical array for RGB publishers
+         *
+         * On how this is used and its caveats, please refer to \ref depth_pub
+         */
+        ros::Publisher* rgb_pub;
+        
+        /**
+         * \brief Message publisher
+         *
+         * Not used at this moment. In the future might be used as a side-channel for internodal communications.
+         */
+        ros::Publisher T_pub;
+        
+        /**
+         * \brief Timer that manages the execution of \ref timerCallback.
+         *
+         * \see \ref Source_base::initialize
+         */
+        ros::Timer timer;
+        
+        /**
+         * \brief Configurable parameter
+         *
+         * If turned on (ture), depth frames will be aligned to the viewpoint of the RGB frames before being transmitted.
+         * Turning on alignment causes a non-negligible overhead on CPU time
+         * but liberates the user from manually cropping the depth images.
+         *
+         * Default value: false.
+         */
+        bool enable_align = false;
+        
+        
+        /**
+        * \brief Configurable parameter
+        *
+        * Default number of channel diversity (in other words, # of threads). It is equal to the size of the dynamically-allocated array Source_base::depth_pub and Source_base::rgb_pub, and the size of vector Source_base::thread_list.
+        *
+        * Default value: 1.
+        */
+        int diversity = 1;
+        
+        /**
+        * \brief Configurable parameter
+        *
+        * FPS value for the camera. It can only be 15, 30, 60 or 90. All other values default to the value of camera::Default_FPS.
+        * When set to 90, RGB channel will run at 60 Hz which is its maximum performance.
+        *
+        * Default value: camera::Default_FPS.
+        *
+        * \see The datasheet for the device:
+        * https://dev.intelrealsense.com/docs/intel-realsense-d400-series-product-family-datasheet
+        *
+        * [May 21st, 2020] It is said that the DS 435 device can be configured to capture as high as 300 frames per second
+        * with a resolution of 100*840. Please checkout this website:
+        * https://dev.intelrealsense.com/docs/high-speed-capture-mode-of-intel-realsense-depth-camera-d435
+        */
+        int FPS = camera::Default_FPS;
+        
+        /**
+         * \brief Post-processing blocks to align the depth frame to the RGB frame. Each thread owns one.
+         *
+         * rs2::align is a post-processing block that can align one channel to the view point of another channel.
+         *
+         * \see How post-processing blocks work on depth frames:
+         * https://dev.intelrealsense.com/docs/depth-post-processing
+         */
+        std::vector<rs2::align> align_to_color;
+        
+        /**
+         * \brief Thread container for all depth and RGB publishers
+         *
+         * The size of Source_base::thread_list depends on the value of Source_base::diversity.
+         *
+         * For each pair of depth publisher and RGB publisher, they share a thread and publish their messages together
+         */
+        std::vector<boost::thread> thread_list;
+        
+        /**
+         * \brief Serial number counter for frames that it obtained from the camera
+         *
+         * This is the counter that counts how many frames it has obtained from the camera (and equally, how many frames it published).
+         * It does not care about the timestamp of each frame, therefore it cannot be used to identify frame loss.
+         *
+         * Each image message being transmitted in the ROS infrastructure is labelled with this serial number;
+         * the value is stored at sensor_msgs::Image::header::frame_id.
+         *
+         * \see ROS documentation for sensor_msgs::Image:
+         * http://docs.ros.org/kinetic/api/sensor_msgs/html/msg/Image.html
+         */
+        uint32_t seq = 0;
+        
+        /**
+         * \brief Mutex to protect Source_base::seq against multi-thread access
+         *
+         * Each thread has to lock Source_base::seq_mutex before manipulating the serial number counter Source_base::seq
+         */
+        boost::mutex seq_mutex;
+        
+        /**
+         * \brief Realsense pipeline
+         */
+        rs2::pipeline p;
+        
+        /**
+         * \brief Realsense device configurations
+         */
+        rs2::config c;
         
         Source_base& define_publishers();
         
