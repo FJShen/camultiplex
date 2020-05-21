@@ -31,39 +31,38 @@
  *
  * Based on the reasoning described above, four different classes can be defined:
  *
- * 1. source_nodelet
- * 2. drain_nodelet
- * 3. source_independent (non-nodelet)
- * 4. drain_independent (non-nodelet)
+ * 1. Source_nodelet
+ * 2. Drain_nodelet
+ * 3. Source_independent (non-nodelet)
+ * 4. Drain_independent (non-nodelet)
  *
  *   It would turn out that for the drain and the source side, respectively, the difference between codes for the nodelet version
  *   and the independent version is very small but subtle. In order to promote code re-usability,
  *   two base classes that serve as common "anscestors" should be added:
  *
- * 5. source_base
- * 6. drain_base
+ * 5. Source_base
+ * 6. Drain_base
  *
  * ## Methodology of design
  *
  * The subtle difference between a nodelet and a non-nodelet is merely how they obtain their node handles.
- * The base classes (source_base and drain_base) will implement most essential functionality but leave the methods that returns
- * their (public) node handle and private node handle as pure virtual functions to be defined. source_base and drain_base, therefore,
+ * The base classes (Source_base and Drain_base) will implement most essential functionality but leave the methods that returns
+ * their (public) node handle and private node handle as pure virtual functions to be defined. Source_base and Drain_base, therefore,
  * are virtual base classes that cannot be instantiated.
  *
  * Refer to external source for how node handles work: http://wiki.ros.org/roscpp/Overview/NodeHandles, http://wiki.ros.org/nodelet
  *
  * //todo: can a nodelet and a non-nodelet talk with each other?
  *
- * \see source_base, drain_base
+ * \see Source_base, Drain_base
  */
 
 namespace camera {
     
-    const std::set<int> Legal_FPS = {15, 30, 60, 90}; ///> Acceptable FPS values supported by Intel RS435.
-    const int Default_FPS = 60; ///> Default FPS value when no value was provided to rosrun or roslaunch
+    const std::set<int> Legal_FPS = {15, 30, 60, 90}; ///< Acceptable FPS values supported by Intel RS435.
+    const int Default_FPS = 60; ///< Default FPS value when no value was provided to rosrun or roslaunch
     
     class Source_base {
-        friend class nodelet::Nodelet;
     
     public:
         Source_base();
