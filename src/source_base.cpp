@@ -232,20 +232,18 @@ namespace camera {
     
     void Source_base::launchThreads() {
         //define lambda which will be launched in parallel
-        auto f = [&]() {
+        auto infinite_loop = [&]() {
             try {
                 while (1) this->kernelRoutine();
             }
-                
-                //There is an interruption point inside kernelRoutine.
-                //Whenever an interruption is detected, kernelRoutine throws a boost::thread_interrupted exception.
+    
             catch (boost::thread_interrupted&) {
                 return;
             }
         };
         
         for (int i = 0; i < diversity; i++) {
-            thread_list.emplace_back(f);
+            thread_list.emplace_back(infinite_loop);
         }
     }
     

@@ -12,13 +12,13 @@
 #include <boost/thread.hpp>
 #include <vector>
 
-
 #define RGB 0x0000
 #define DEPTH 0x0001
 
+
 /**
  * \namespace camera
- * \brief All ROS nodes for the package "camultiplex" are defined in this namespace \ref camera
+ * \brief All ROS nodes for the package "camultiplex" are defined in this namespace
  *
  * ## Purpose of design
  *
@@ -56,12 +56,25 @@
  *
  * \see Source_base, Drain_base
  */
-
 namespace camera {
     
     const std::set<int> Legal_FPS = {15, 30, 60, 90}; ///< Acceptable FPS values supported by Intel RS435.
     const int Default_FPS = 60; ///< Default FPS value when no value was provided to rosrun or roslaunch
     
+    
+    /**
+     * \class Source_base
+     * \brief Interfaces with the camera and publishes the image frames in the form of sensor_msgs::Image
+     *
+     * ## Configurable parameters
+     * 1. diversity
+     * 2. FPS
+     * 3. align
+     *
+     * ## Usage
+     * Source_base is an abstract class that provides nearly all functionality needed by a source node which interfaces with the camera.
+     * Its two pure virtual functions, \ref getMyNodeHandle and \ref getMyPrivateNodeHandle need to be implemented by derived class depending on whether they are nodes or nodelets.
+     */
     class Source_base {
     
     public:
@@ -96,6 +109,7 @@ namespace camera {
     
     
     private:
+        
         /**
          * \brief Dynamical array for depth publishers
          *
@@ -105,6 +119,7 @@ namespace camera {
          */
         ros::Publisher* depth_pub;
         
+        
         /**
          * \brief Dynamical array for RGB publishers
          *
@@ -112,12 +127,14 @@ namespace camera {
          */
         ros::Publisher* rgb_pub;
         
+        
         /**
          * \brief Message publisher
          *
          * Not used at this moment. In the future might be used as a side-channel for internodal communications.
          */
         ros::Publisher T_pub;
+        
         
         /**
          * \brief Configurable parameter
@@ -140,6 +157,7 @@ namespace camera {
         */
         int diversity = 1;
         
+        
         /**
         * \brief Configurable parameter
         *
@@ -157,6 +175,7 @@ namespace camera {
         */
         int FPS = camera::Default_FPS;
         
+        
         /**
          * \brief Post-processing blocks to align the depth frame to the RGB frame. Each thread owns one.
          *
@@ -167,6 +186,7 @@ namespace camera {
          */
         std::vector<rs2::align> align_to_color;
         
+        
         /**
          * \brief Thread container for all depth and RGB publishers
          *
@@ -175,6 +195,7 @@ namespace camera {
          * For each pair of depth publisher and RGB publisher, they share a thread and publish their messages together
          */
         std::vector<boost::thread> thread_list;
+        
         
         /**
          * \brief Serial number counter for frames that it obtained from the camera
@@ -190,6 +211,7 @@ namespace camera {
          */
         uint32_t seq = 0;
         
+        
         /**
          * \brief Mutex to protect Source_base::seq against multi-thread access
          *
@@ -197,15 +219,18 @@ namespace camera {
          */
         boost::mutex seq_mutex;
         
+        
         rs2::pipeline p;///<Realsense pipeline
         
         rs2::config c;///<Realsense device configurations
+        
         
         /**
          * \brief Define as many RGB and depth publishers as \ref Source_base::diversity
          * @return Reference to self, enabling method chaining
          */
         Source_base& definePublishers();
+        
         
         /**
          * \brief Turn on the camera
@@ -215,6 +240,7 @@ namespace camera {
          */
         Source_base& initCamera();
     
+        
         /**
          * \brief Publish the moment this method is called as a parameter. Units in microsecond.
          *
@@ -224,12 +250,13 @@ namespace camera {
          */
         Source_base& setParamTimeOfStart();
         
+        
         /**
-         * \brief The core routine that the source does - to transmit images
+         * \brief The core routine that the source does - to interface with the camera and transmit images
          *
          * The routine will wait blockingly for the next frame from the camera (and process it) and copy it to an instance of ROS's sensor_msgs::Image. The message is then published.
          *
-         * On the selection of which publisher to use, every thread has the choice to use any of rgb_pub and depth_pub. It determines which one to use by calculating the the image's serial number modulo the value of \ref Source_base::diversity: ```local_seq  %diversity```. This can cause undesired behavior when two threads "collide" on the same publisher. It might be wiser to strictly assign each thread a specific RGB and depth publisher to use.
+         * On the selection of which publisher to use, every thread has the choice to use any of rgb_pub and depth_pub. It determines which one to use by calculating the the image's serial number modulo the value of Source_base::diversity : ```index = local_seq  % diversity```. This can cause undesired behavior when two threads "collide" on the same publisher. It might be wiser to strictly assign each thread a specific RGB and depth publisher to use.
          *
          * kernelRoutine is designed to be run by a managed thread in an infinite loop.
          * The first line of kernelRoutine is a thread interruption point. Whenever the thread receives an interruption, it will throw an exception and return from here.
@@ -255,6 +282,14 @@ namespace camera {
          */
         void kernelRoutine();
         
+        
+        /**
+         * \brief Launch as many threads as Source_base::diversity has defined
+         *
+         * Each thread runs kernelRoutine in an infinite loop. They can be interrupted and then joined by calling boost::thread::interrupt() and boost::thread::join() upon them.
+         *
+         * \see kernelRoutine for an example on how to use lambdas to generate an infinite loop which executes kernelRoutine
+         */
         void launchThreads();
         
     };
