@@ -15,7 +15,7 @@ namespace camera{
     
     void Source_nodelet::onInit(){
         initialize();
-        std::cout << ("Camera source node nodelet onInit called\n");
+        //std::cout << ("camera Source_nodelet onInit called\n");
     }
     
     Source_nodelet::~Source_nodelet(){

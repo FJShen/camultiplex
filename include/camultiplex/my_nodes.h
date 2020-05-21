@@ -65,15 +65,16 @@ namespace camera {
     class Source_base {
     
     public:
-        Source_base();
+        Source_base(); ///<Constructor
         
-        virtual ~Source_base();
+        virtual ~Source_base(); ///<Destructor
     
     protected:
-        //virtual function to fetch node handle and private node handle
-        virtual ros::NodeHandle& getMyNodeHandle() = 0;
         
-        virtual ros::NodeHandle& getMyPrivateNodeHandle() = 0;
+        virtual ros::NodeHandle& getMyNodeHandle() = 0; ///<virtual function to fetch node handle
+        
+        virtual ros::NodeHandle& getMyPrivateNodeHandle() = 0; ///<virtual function to fetch private node handle
+        
         
         /**
          * \brief Initialize and start the source node.
@@ -82,15 +83,14 @@ namespace camera {
          * 1. Start the camera with the required FPS and alignment setting
          * 2. Populate rgb_pub and depth_pub with the required amount of publishers
          * 3. Set up a new parameter called "rs_start_time". The drain node will have access to this parameter, though it is currently not utilized.
-         * 4. Instantiate matching number of alignment proessing blocks and put into the vector \ref align_to_color
-         * 5. Start the timer.
+         * 4. Instantiate matching number of alignment processing blocks and put them into the vector \ref align_to_color
+         * 5. Launch the threads and let the publishers publish the images.
          *
          * Although what this method does is the same for both derived classes of source_base,
          * due to the fact that \ref initialize needs to call \ref getMyNodeHandle and \ref getMyPrivateNodeHandle,
-         * which are both pure virtual functions, source_base cannot call \ref initialize within its own constructor.
+         * which are both pure virtual functions, Source_base cannot call \ref initialize within its own constructor.
          * It has to be called by the derived classes.
          *
-         * What the timer does is
          */
         void initialize();
     
@@ -118,13 +118,6 @@ namespace camera {
          * Not used at this moment. In the future might be used as a side-channel for internodal communications.
          */
         ros::Publisher T_pub;
-        
-        /**
-         * \brief Timer that manages the execution of \ref timerCallback.
-         *
-         * \see \ref Source_base::initialize
-         */
-        ros::Timer timer;
         
         /**
          * \brief Configurable parameter
@@ -204,25 +197,65 @@ namespace camera {
          */
         boost::mutex seq_mutex;
         
-        /**
-         * \brief Realsense pipeline
-         */
-        rs2::pipeline p;
+        rs2::pipeline p;///<Realsense pipeline
+        
+        rs2::config c;///<Realsense device configurations
         
         /**
-         * \brief Realsense device configurations
+         * \brief Define as many RGB and depth publishers as \ref Source_base::diversity
+         * @return Reference to self, enabling method chaining
          */
-        rs2::config c;
+        Source_base& definePublishers();
         
-        Source_base& define_publishers();
-        
-        Source_base& init_camera();
-        
-        void parallelAction();
-        
-        void timerCallback(const ros::TimerEvent& event);
-        
+        /**
+         * \brief Turn on the camera
+         *
+         * Fetches parameters align and FPS from ROS parameter server and starts the camera.
+         * @return Reference to self, enabling method chaining
+         */
+        Source_base& initCamera();
+    
+        /**
+         * \brief Publish the moment this method is called as a parameter. Units in microsecond.
+         *
+         * Get the current Unit-time in microseconds and publish it to ROS parameter server in the name of "rs_start_time". This parameter is currently not used though.
+         * @return Reference to self, enabling method chaining
+         * \see helper::get_time_stamp_str
+         */
         Source_base& setParamTimeOfStart();
+        
+        /**
+         * \brief The core routine that the source does - to transmit images
+         *
+         * The routine will wait blockingly for the next frame from the camera (and process it) and copy it to an instance of ROS's sensor_msgs::Image. The message is then published.
+         *
+         * On the selection of which publisher to use, every thread has the choice to use any of rgb_pub and depth_pub. It determines which one to use by calculating the the image's serial number modulo the value of \ref Source_base::diversity: ```local_seq  %diversity```. This can cause undesired behavior when two threads "collide" on the same publisher. It might be wiser to strictly assign each thread a specific RGB and depth publisher to use.
+         *
+         * kernelRoutine is designed to be run by a managed thread in an infinite loop.
+         * The first line of kernelRoutine is a thread interruption point. Whenever the thread receives an interruption, it will throw an exception and return from here.
+         * Here is the exemplary usage of kernelRoutine:
+         * ```
+         *  //define the infinite loop and the exit mechanism
+         *  auto f=[&](){
+         *      try {while(true) kernelRouine();}
+         *      catch(boost::thread_interrupted&) {return;}
+         *  }
+         *
+         *  //launch the thread
+         *  boost::thread t(f);
+         *
+         *  //...
+         *
+         *  //terminate the thread
+         *  t.interrupt();
+         *  t.join();
+         * ```
+         * \see Documentation on boost::thread's thread management:
+         * https://www.boost.org/doc/libs/1_58_0/doc/html/thread/thread_management.html
+         */
+        void kernelRoutine();
+        
+        void launchThreads();
         
     };
     

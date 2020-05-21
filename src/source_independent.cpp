@@ -17,7 +17,7 @@ Source_independent::~Source_independent(){
 void Source_independent::selfInit(){
     nph = ros::NodeHandle(ros::this_node::getName());
     initialize();
-    std::cout << ("Camera independent source node selfInit called\n");
+//    std::cout << ("Camera Source_independent selfInit called\n");
 }
 
 ros::NodeHandle& Source_independent::getMyNodeHandle(){
