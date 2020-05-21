@@ -46,29 +46,29 @@
  * ## Methodology of design
  *
  * The subtle difference between a nodelet and a non-nodelet is merely how they obtain their node handles.
- * The base classes (source_base and drain_base) will implement most functionality but leave the methods that returns
- * their (public) node handle and private node handle as pure virtual functions to be defined.
+ * The base classes (source_base and drain_base) will implement most essential functionality but leave the methods that returns
+ * their (public) node handle and private node handle as pure virtual functions to be defined. source_base and drain_base, therefore,
+ * are virtual base classes that cannot be instantiated.
  *
  * Refer to external source for how node handles work: http://wiki.ros.org/roscpp/Overview/NodeHandles, http://wiki.ros.org/nodelet
  *
  * //todo: can a nodelet and a non-nodelet talk with each other?
  *
- * \see source_base.cpp, source_independent.cpp, source_nodelet.cpp
- * \see drain_base.cpp, drain_independent.cpp, drain_nodelet.cpp
+ * \see source_base, drain_base
  */
 
 namespace camera {
     
-    const std::set<int> Legal_FPS = {15, 30, 60, 90};
-    const int Default_FPS = 60;
+    const std::set<int> Legal_FPS = {15, 30, 60, 90}; ///> Acceptable FPS values supported by Intel RS435.
+    const int Default_FPS = 60; ///> Default FPS value when no value was provided to rosrun or roslaunch
     
-    class source_base {
+    class Source_base {
         friend class nodelet::Nodelet;
     
     public:
-        source_base();
+        Source_base();
         
-        virtual ~source_base();
+        virtual ~Source_base();
     
     protected:
         ros::Publisher* depth_pub;
@@ -83,8 +83,8 @@ namespace camera {
         
         bool enable_align = false;
         
-        int N = 1; //this is the default number of channel diversity
-        int FPS = camera::Default_FPS; //{15, 30, 60, 90}; this FPS value should be send in via command line parameters in the future
+        int N = 1; //> Default number of channel diversity
+        int FPS = camera::Default_FPS; //> Default FPS value
         uint32_t seq = 0;
         
         //rs2::frameset frames;
@@ -95,22 +95,28 @@ namespace camera {
         virtual ros::NodeHandle& getMyNodeHandle() = 0;
         
         virtual ros::NodeHandle& getMyPrivateNodeHandle() = 0;
+    
+        /**
+         * \brief Define the publishers, initialize the camera, and kick start the threads
+         *
+         * Although what this method does is the same for both derived classes of source_base,
+         */
+        void initialize();
         
-        source_base& define_publishers();
+        Source_base& define_publishers();
         
-        source_base& init_camera();
+        Source_base& init_camera();
         
         void parallelAction();
         
         void timerCallback(const ros::TimerEvent& event);
         
-        source_base& setParamTimeOfStart();
+        Source_base& setParamTimeOfStart();
         
-        void initialize();
     };
     
     
-    class source_nodelet : public source_base, public nodelet::Nodelet {
+    class Source_nodelet : public Source_base, public nodelet::Nodelet {
     protected:
         virtual ros::NodeHandle& getMyNodeHandle() override;
         
@@ -120,23 +126,23 @@ namespace camera {
         //onInit is an override of nodelet::Nodelet::onInit()
         virtual void onInit() override;
         
-        virtual ~source_nodelet();
+        virtual ~Source_nodelet();
     };
     
-    class source_independent : public source_base {
+    class Source_independent : public Source_base {
     public:
-        source_independent() {
+        Source_independent() {
             selfInit();
         }
         
-        virtual ~source_independent();
+        virtual ~Source_independent();
     
     private:
         ros::NodeHandle nh;
         ros::NodeHandle nph;
     
     protected:
-        //equivalent of method void nodelet::Nodelet::onInit(), but since source_independent is not dereived from Nodelet
+        //equivalent of method void nodelet::Nodelet::onInit(), but since Source_independent is not dereived from Nodelet
         //we just have to call selfInit() in constructor
         void selfInit();
         
@@ -147,16 +153,16 @@ namespace camera {
     };
     
     
-    class drain_base {
+    class Drain_base {
     public:
         
-        drain_base() :
+        Drain_base() :
                 depth_sub(nullptr), rgb_sub(nullptr) {
 //            NODELET_INFO("camera drain node constructed\n");
             std::cout << ("camera drain node base constructed\n");
         };
         
-        virtual ~drain_base();
+        virtual ~Drain_base();
     
     protected:
         ros::Subscriber* depth_sub;
@@ -183,43 +189,43 @@ namespace camera {
         
         void timerCallback(const ros::TimerEvent& event);
         
-        virtual drain_base& define_subscribers();
+        virtual Drain_base& define_subscribers();
         
-        virtual drain_base& create_directories();
+        virtual Drain_base& create_directories();
         
-        virtual drain_base& save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
+        virtual Drain_base& save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
         
         void initialize();
     };
     
     
-    class drain_nodelet : public drain_base, public nodelet::Nodelet {
+    class Drain_nodelet : public Drain_base, public nodelet::Nodelet {
     protected:
         virtual ros::NodeHandle& getMyNodeHandle() override;
         
         virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
     
     public:
-        //drain_nodelet::onInit is override to nodelet::Nodelet::onInit
+        //Drain_nodelet::onInit is override to nodelet::Nodelet::onInit
         virtual void onInit() override;
         
-        virtual ~drain_nodelet();
+        virtual ~Drain_nodelet();
         
     };
     
-    class drain_independent : public drain_base {
+    class Drain_independent : public Drain_base {
     public:
-        drain_independent() {
+        Drain_independent() {
             selfInit();
         }
         
-        virtual ~drain_independent();
+        virtual ~Drain_independent();
     
     private:
         ros::NodeHandle nh;
         ros::NodeHandle nph; //private handle
         
-        //equivalent of method void nodelet::Nodelet::onInit(), but since source_independent is not dereived from Nodelet
+        //equivalent of method void nodelet::Nodelet::onInit(), but since Source_independent is not dereived from Nodelet
         //we just have to call selfInit() in constructor
         void selfInit();
     

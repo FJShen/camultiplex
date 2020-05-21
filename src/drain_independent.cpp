@@ -4,21 +4,21 @@
 
 using namespace camera;
 
-drain_independent::~drain_independent() {
+Drain_independent::~Drain_independent() {
     ros::NodeHandle& rhp = getMyPrivateNodeHandle();
     rhp.deleteParam("diversity");
     rhp.deleteParam("base_path");
 }
 
-ros::NodeHandle& drain_independent::getMyNodeHandle() {
+ros::NodeHandle& Drain_independent::getMyNodeHandle() {
     return nh;
 }
 
-ros::NodeHandle& drain_independent::getMyPrivateNodeHandle() {
+ros::NodeHandle& Drain_independent::getMyPrivateNodeHandle() {
     return nph;
 }
 
-void drain_independent::selfInit() {
+void Drain_independent::selfInit() {
     nph = ros::NodeHandle(ros::this_node::getName()); //assign the name of this node to nph, everything that nph have access to is in the private namespace of this node
     initialize();
     std::cout << ("Camera independent drain node selfInit called\n");

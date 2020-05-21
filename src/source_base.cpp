@@ -12,14 +12,14 @@
 
 namespace camera {
     
-    source_base::source_base():
+    Source_base::Source_base():
     depth_pub(nullptr), rgb_pub(nullptr)
     {
         std::cout << "camera source base node constructed\n";
     }
     
     
-    source_base::~source_base() {
+    Source_base::~Source_base() {
         for (auto &x : thread_list) {
             if (x.get_id() != boost::thread::id()) {
                 x.interrupt();
@@ -38,7 +38,7 @@ namespace camera {
         std::cout << ("camera source base node destrcuted\n");
     };
 
-    void source_base::parallelAction() {
+    void Source_base::parallelAction() {
 
         boost::this_thread::interruption_point();
 
@@ -127,7 +127,7 @@ namespace camera {
     }
 
 
-    source_base &source_base::define_publishers() {
+    Source_base &Source_base::define_publishers() {
 
 //        ros::NodeHandle &rh = getMTNodeHandle();
 //        ros::NodeHandle &rph = getMTPrivateNodeHandle();
@@ -168,7 +168,7 @@ namespace camera {
     }
 
 
-    source_base &source_base::init_camera() {
+    Source_base &Source_base::init_camera() {
 
 //        ros::NodeHandle &rph = getMTPrivateNodeHandle();
         ros::NodeHandle &rph = getMyPrivateNodeHandle();
@@ -226,7 +226,7 @@ namespace camera {
     }
 
 
-    source_base &source_base::setParamTimeOfStart() {
+    Source_base &Source_base::setParamTimeOfStart() {
 //set a parameter that describes the time stamp of starting in microseconds
 //        ros::NodeHandle &rh = getMTNodeHandle();
         ros::NodeHandle &rh = getMyNodeHandle();
@@ -242,12 +242,12 @@ namespace camera {
         return *this;
     }
     
-    void source_base::initialize(){
+    void Source_base::initialize(){
         //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
         ros::NodeHandle &rh = getMyNodeHandle();
         ros::NodeHandle &rph = getMyPrivateNodeHandle();
     
-        //tentatively moved to source_base ctor
+        //tentatively moved to Source_base ctor
         define_publishers();
         init_camera();
         setParamTimeOfStart();
@@ -258,10 +258,10 @@ namespace camera {
     
         //use timer to trigger callback
     
-        timer = rh.createTimer(ros::Duration(1 / FPS), &source_base::timerCallback, this, true);
+        timer = rh.createTimer(ros::Duration(1 / FPS), &Source_base::timerCallback, this, true);
     }
     
-    void source_base::timerCallback(const ros::TimerEvent &event) {
+    void Source_base::timerCallback(const ros::TimerEvent &event) {
         
         //define lambda which will be launched in parallel
         auto f = [&]() {

@@ -13,7 +13,7 @@
 
 namespace camera {
     
-    drain_base::~drain_base() {
+    Drain_base::~Drain_base() {
         delete[] depth_sub;
         delete[] rgb_sub;
         std::cout << ("camera drain node base destructed\n");
@@ -21,7 +21,7 @@ namespace camera {
     
     
     //callback to handle depth frame messages
-    void drain_base::drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num) {
+    void Drain_base::drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num) {
         
         //print debug information
 //	NODELET_DEBUG_STREAM( "received depth frame"
@@ -37,7 +37,7 @@ namespace camera {
         cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg);
         
         boost::async(
-                boost::bind(&drain_base::save_image,
+                boost::bind(&Drain_base::save_image,
                             this,
                             cv_const_ptr,
                             boost::ref(msg->header),
@@ -53,7 +53,7 @@ namespace camera {
     
     
     //callback to handle rgb frame messages
-    void drain_base::drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num) {
+    void Drain_base::drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num) {
 
 //        NODELET_DEBUG_STREAM( "received rgb frame"
 //			      << (msg->header.frame_id) << " from channel "
@@ -65,7 +65,7 @@ namespace camera {
         cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
         
         boost::async(
-                boost::bind(&drain_base::save_image,
+                boost::bind(&Drain_base::save_image,
                             this,
                             cv_const_ptr,
                             boost::ref(msg->header),
@@ -78,8 +78,8 @@ namespace camera {
 //        std::cout << "saved rgb frame" << (msg->header.frame_id) << "\n";
     }
     
-    drain_base&
-    drain_base::save_image(cv_bridge::CvImageConstPtr cv_const_ptr, std_msgs::Header header, unsigned int channel) {
+    Drain_base&
+    Drain_base::save_image(cv_bridge::CvImageConstPtr cv_const_ptr, std_msgs::Header header, unsigned int channel) {
         
         //name the image with the timestamp obtained from the source
         unsigned int seconds = header.stamp.sec;
@@ -121,7 +121,7 @@ namespace camera {
     }
     
     
-    drain_base& drain_base::create_directories() {
+    Drain_base& Drain_base::create_directories() {
 
 //	ros::NodeHandle& rph = getMTPrivateNodeHandle();
         ros::NodeHandle& rph = getMyPrivateNodeHandle();
@@ -163,7 +163,7 @@ namespace camera {
     }
     
     
-    drain_base& drain_base::define_subscribers() {
+    Drain_base& Drain_base::define_subscribers() {
 //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
 //	ros::NodeHandle& rh = getMTNodeHandle();
 //	ros::NodeHandle& rhp = getMTPrivateNodeHandle();
@@ -192,10 +192,10 @@ namespace camera {
         const std::string s_rgb("RGB");
         for (int i = 0; i < N; i++) {
             depth_sub[i] = rh.subscribe<sensor_msgs::Image>(s_d + std::to_string(i), 8,
-                                                            boost::bind(&drain_base::drain_depth_callback, this, _1,
+                                                            boost::bind(&Drain_base::drain_depth_callback, this, _1,
                                                                         i));
             rgb_sub[i] = rh.subscribe<sensor_msgs::Image>(s_rgb + std::to_string(i), 8,
-                                                          boost::bind(&drain_base::drain_rgb_callback, this, _1, i));
+                                                          boost::bind(&Drain_base::drain_rgb_callback, this, _1, i));
         }
         
 //	NODELET_INFO_STREAM_NAMED("camera drain", "Defined "<<N<<" subscribers");
@@ -204,7 +204,7 @@ namespace camera {
         return *this;
     }
     
-    void drain_base::initialize() {
+    void Drain_base::initialize() {
         //getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
         ros::NodeHandle& rh = getMyNodeHandle();
         ros::NodeHandle& rhp = getMyPrivateNodeHandle();
@@ -212,10 +212,10 @@ namespace camera {
         define_subscribers();
         create_directories();
         
-        timer = rh.createTimer(ros::Duration(5), &drain_base::timerCallback, this);
+        timer = rh.createTimer(ros::Duration(5), &Drain_base::timerCallback, this);
     }
     
-    void drain_base::timerCallback(const ros::TimerEvent& event) {
+    void Drain_base::timerCallback(const ros::TimerEvent& event) {
         std::cout << "Drain: Depth received " << depth_counter.getCurrentSeq()
                   << " frames, total transmission loss estimate is "
                   << depth_counter.getLoss() << " frames\n";

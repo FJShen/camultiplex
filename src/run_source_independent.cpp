@@ -11,7 +11,7 @@ int main(int argc, char** argv){
 
     ros::init(argc, argv, "independent_source_node");
 
-    camera::source_independent source_node;
+    camera::Source_independent source_node;
 
     ros::spin();
 

@@ -5,20 +5,20 @@
 
 namespace camera{
     
-    ros::NodeHandle& source_nodelet::getMyNodeHandle(){
+    ros::NodeHandle& Source_nodelet::getMyNodeHandle(){
         return getMTNodeHandle();
     }
     
-    ros::NodeHandle& source_nodelet::getMyPrivateNodeHandle(){
+    ros::NodeHandle& Source_nodelet::getMyPrivateNodeHandle(){
         return getMTPrivateNodeHandle();
     }
     
-    void source_nodelet::onInit(){
+    void Source_nodelet::onInit(){
         initialize();
         std::cout << ("Camera source node nodelet onInit called\n");
     }
     
-    source_nodelet::~source_nodelet(){
+    Source_nodelet::~Source_nodelet(){
         ros::NodeHandle &rhp = getMyPrivateNodeHandle();
         rhp.deleteParam("diversity");
         rhp.deleteParam("FPS");

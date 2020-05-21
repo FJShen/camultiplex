@@ -126,9 +126,9 @@ When running a set of nodes that span across a network (e.g. LAN) who need to sh
 
 Suppose we have two hosts (computers): H1 and H2; we want the master to be run on H1:
 
-1. On H1 and H2 separately **export ROS_IP=own_ip_address** (this step might not be needed)
+1. On H1 and H2 separately ```export ROS_IP=[own_ip_address]``` (this step might not be needed)
 
-2. On H2 **export ROS_MASTER_URI=http://*h1_ip_addr*:11311**. 
+2. On H2 ```export ROS_MASTER_URI=http://[h1_ip_addr]:11311```. 
 
 3. Call ```roscore``` only on H1.
 
