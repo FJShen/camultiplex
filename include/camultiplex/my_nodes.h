@@ -6,8 +6,6 @@
 #include "camultiplex/helper.h"
 #include <nodelet/nodelet.h>
 #include "sensor_msgs/Image.h"
-#include "sensor_msgs/image_encodings.h"
-#include <stdio.h>
 #include "cv_bridge/cv_bridge.h"
 #include <boost/thread.hpp>
 #include <vector>
@@ -15,6 +13,7 @@
 #define RGB 0x0000
 #define DEPTH 0x0001
 
+//todo: re-evaluate access specifiers for each method and member variable
 
 /**
  * \namespace camera
@@ -65,6 +64,9 @@ namespace camera {
     
     const std::set<int> Legal_FPS = {15, 30, 60, 90}; ///< Acceptable FPS values supported by Intel RS435.
     const int Default_FPS = 60; ///< Default FPS value when no value was provided to rosrun or roslaunch
+    const std::string Default_path = "/media/nvidia/ExtremeSSD";
+    const int Default_drain_diversity = 3;
+    const int Default_source_diversity = 3;
     
     
     /**
@@ -72,9 +74,9 @@ namespace camera {
      * \brief Interfaces with the camera and publishes the image frames in the form of sensor_msgs::Image
      *
      * ## Configurable parameters
-     * 1. diversity
-     * 2. FPS
-     * 3. align
+     * 1. **diversity**: number of topics that source publishes to
+     * 2. **FPS**: FPS of camera
+     * 3. **align**: to align depth frames to the viewpoint of RGB frames
      *
      * ## Usage
      * Source_base is an abstract class that provides nearly all functionality needed by a source node which interfaces with the camera.
@@ -169,9 +171,9 @@ namespace camera {
         *
         * Default number of channel diversity (in other words, # of threads). It is equal to the size of the dynamically-allocated arrays Source_base::depth_pub and Source_base::rgb_pub, and the size of vector Source_base::thread_list.
         *
-        * Default value: 1.
+        * Default value: camera::Default_source_diversity.
         */
-        int diversity = 1;
+        int diversity = camera::Default_source_diversity;
         
         
         /**
@@ -410,50 +412,195 @@ namespace camera {
         virtual ~Source_independent();
     };
     
-    
+    /**
+     * \class Drain_base
+     * \brief Interfaces with the file system. Converts sensor_msgs::Image into .jpg and .png format and stores them as images.
+     *
+     * ## Configurable parameters
+     * 1. **diversity**: number of topics that drain subscribes to
+     * 2. **base_path**: path to create folder
+     *
+     * ## Usage
+     * Source_drain is an abstract class that provides nearly all functionality needed by a source node which interfaces with the camera.
+     * Its two pure virtual functions, getMyNodeHandle and getMyPrivateNodeHandle need to be implemented
+     * by derived class depending on whether they are nodes or nodelets.
+     */
     class Drain_base {
     public:
-        
+        /**
+         * \brief Initializes depth_sub and rgb_sub as nullptr
+         */
         Drain_base() :
                 depth_sub(nullptr), rgb_sub(nullptr) {
-//            NODELET_INFO("camera drain node constructed\n");
             std::cout << ("camera drain node base constructed\n");
         };
         
+        
+        /**
+         * \brief Deletes depth_sub and rgb_sub
+         */
         virtual ~Drain_base();
     
     protected:
-        ros::Subscriber* depth_sub;
-        ros::Subscriber* rgb_sub;
-        ros::Timer timer;
+        /**
+         * \brief Initialize and start the drain node
+         *
+         * The method obtains parameters (diversity, base_path) from ROS parameter server and does the following in order:
+         * 1. Create a new directory under the path specified by base_path. The directory is named in the format of [yyyy_m_d_h_m]
+         * 2. Define as many subscribers as required by diversity. Unless you want to make the drain miss any frame transmitted by the source,
+         * drain diversity should be no less than source diversity.
+         */
+        void initialize();
         
-        helper::Counter depth_counter;
-        helper::Counter rgb_counter;
         
-        std::string base_path = std::string(
-                "/media/nvidia/ExtremeSSD"); //this is the path where the folder will be created
-        std::string folder_path; //this is the path of the created folder
-        
-        int N = 3; //default number of channel multiplex diversity
-        
+        /**
+         * \brief Pure virtual function to fetch node handle
+         * @return (Public) node handle
+         */
         virtual ros::NodeHandle& getMyNodeHandle() = 0;
+    
         
+        /**
+         * \brief Pure virtual function to fetch private node handle
+         * @return Private node handle
+         */
         virtual ros::NodeHandle& getMyPrivateNodeHandle() = 0;
         
-        //ConstPtr& is necessary for nodelets to work
-        void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int);
+    private:
+        /**
+         * \brief Dynamic array of depth channel subscribers
+         */
+        ros::Subscriber* depth_sub;
         
-        void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int);
         
+        /**
+         * \brief Dynamic array of RGB channel subscribers
+         */
+        ros::Subscriber* rgb_sub;
+        
+        
+        /**
+         * \brief Manages the periodic display of receiver information
+         *
+         * timerCallback is set to be called every 5 seconds to display information about the number of received frames:
+         * ```
+         * Drain: Depth received xxx frames, total transmission loss estimate is xxx frames
+         * Drain: RGB received xxx frames, total transmission loss estimate is xxx frames
+         * ```
+         *
+         * \see timerCallback
+         */
+        ros::Timer timer;
+        
+        
+        /**
+         * \brief Count the number of received depth frames and estimate lost of frames during transmission
+         *
+         * Call helper::Counter::updateSeq upon the serial number of every received frame
+         * in drain_rgb_callback or drain_depth_callback.
+         *
+         * Example:
+         * ```
+         * void callback(const sensor_msgs::Image::ConstPtr& msg){
+         *      //...
+         *
+         *      //update counter with serial number
+         *      //need to convert string-type frame id into unsigned int
+         *      depth_counter.updateSeq(std::stoul(msg->header.frame_id));
+         * }
+         * ```
+         *
+         * helper::Counter has an in-built mutex to ensure thread safety.
+         * No need for caller to do additional protection.
+         * \see helper::Counter
+         */
+        helper::Counter depth_counter;
+    
+        
+        /**
+         * \brief Count the number of received RGB frames and estimate lost of frames during transmission
+         *
+         * \see depth_counter
+         */
+        helper::Counter rgb_counter;
+        
+        
+        /**
+         * \brief The path where the folder will be created
+         */
+        std::string base_path = camera::Default_path;
+        
+        
+        /**
+         * \brief Path of the created directory (the directory that contains rgb_images and depth_images)
+         */
+        std::string folder_path;
+        
+        
+        /**
+         * \brief Drain diversity
+         *
+         * Default value: camera::Default_drain_diversity
+         */
+        int diversity = camera::Default_drain_diversity;
+    
+        
+        /**
+         * \brief Create a new directory under base path
+         *
+         * The new directory is named with the format "year_month_date_hour_minute" based on the host's local time setting. E.g. "2020_5_22_15_4" means the directory was created at 15:04, May 22nd, 2020
+         *
+         * Under this newly created director, two sub-directories - "rgb_images" and "depth_images" - are also created.
+         *
+         * After creating directories, the current path is set to be \ref folder_path.
+         * @return Reference to self, allowing method chaining.
+         */
+        Drain_base& create_directories();
+        
+        
+        /**
+         * \brief Define as many subscribers as required by diversity
+         *
+         * The following topics will be subscribed to:
+         *
+         * camultiplex/depthx, where x=0, 1, ..., diversity-1
+         *
+         * camultiplex/RGBx, where x=0, 1, ..., diversity-1
+         *
+         * @return Reference to self, allowing method chaining.
+         */
+        Drain_base& define_subscribers();
+    
+        
+        /**
+         * \brief Callback function to process depth channel images
+         *
+         * Callback function uses cv_bridge::toCvShare to convert the received sensor_msgs::Image into a read-only reference to an instance of OpenCV Mat
+         *
+         * Another choice is to call cv_bridge::toCvCopy instead of toCvShare; this allows the callback function to do mutations on the CV image.
+         * \see Turotial for ROS package cv_bridge on how to convert between ROS images and CV images:
+         * http://wiki.ros.org/cv_bridge/Tutorials/UsingCvBridgeToConvertBetweenROSImagesAndOpenCVImages
+         * \see ROS publisher and subscribers
+         * http://wiki.ros.org/roscpp/Overview/Publishers%20and%20Subscribers
+         * @param msg A shared_ptr to the received message.
+         * @param index Index of the topic being subscribed to.
+         */
+        void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int index);
+    
+        
+        /**
+         * \brief Callback function to process depth channel images
+         * \see drain_depth_callback
+         * @param msg A shared_ptr to the received message.
+         * @param index Index of the topic being subscribed to.
+         */
+        void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int index);
+    
+        
+        Drain_base& save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
+    
         void timerCallback(const ros::TimerEvent& event);
         
-        virtual Drain_base& define_subscribers();
-        
-        virtual Drain_base& create_directories();
-        
-        virtual Drain_base& save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
-        
-        void initialize();
     };
     
     

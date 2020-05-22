@@ -141,13 +141,16 @@ Note: When running a network of ROS nodes on different hosts, nodelets will not 
 ## Table of Parameters
 | Parameter        | Type   | User configurable? | Where to configure                              | Usage                                    |
 |------------------|--------|--------------------|-------------------------------------------------|------------------------------------------|
-| *drain*/diversity  | int    | Yes                | Drain side                                      | Number of threads that a drain uses      |
+| *drain*/diversity  | int    | Yes                | Drain side                                      | Number of threads that a drain uses (1)   |
 | *drain*/base_path  | string | Yes                | Drain side                                      | Path for the drain to store images       |
 | *source*/diversity | int    | Yes                | Source side                                     | Number of threads that a source uses     |
 | *source*/FPS       | int    | Yes                | Source side                                     | Frames-per-second of the camera          |
 | *source*/align     | bool   | Yes                | Source side                                     | Align depth image to RGB image           |
 | /rs_start_time   | string | No                 | Global parameter set by  source node at runtime | Unix time of when the camera was started |
 
+Comments:
+
+1) Drain diversity should be no less than source diversity lest some active topics not be subscribed by the drain
 
 
 
