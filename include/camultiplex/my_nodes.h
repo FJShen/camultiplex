@@ -24,10 +24,15 @@
  *
  * When using the package "camultiplex" in practice to collect images from an Intel RS435 camera and store them in any filesystem,
  * usually two nodes are involved: 1) a "source" that interfaces with the camera device, 2) a "drain" that interfaces with the file system.
+ * The "source" transforms the image frames into ROS-compatible format, transmits the packets across the ROS middleware infrastructure;
+ * the "drain" receives and restores the packets, then store them to the filesystem with .png or .jpg format.
  *
- * Furthermore, depending on the setup one may wish to run both nodes 1) on a single host or 2) on different hosts within a network.
+ * Furthermore, depending on physical setup one may wish to run both nodes 1) on a single host or 2) on different hosts within a network.
+ *
  * In the case two nodes are run on the same host, it is more efficient to run them as <em>nodelets</em> which share the same memory space.
- * This eliminates the performance overhead cause by TCP communication that is ubiquitous among any two "non-nodelet" nodes.
+ * This eliminates the overhead cause by TCP communication that is ubiquitous among any two "non-nodelet" nodes.
+ *
+ * When two nodes are not run on the same host, however, TCP (or UDP) connection is the only solution. Nodelets are not possible.
  *
  * Based on the reasoning described above, four different classes can be defined:
  *
@@ -36,7 +41,7 @@
  * 3. Source_independent (non-nodelet)
  * 4. Drain_independent (non-nodelet)
  *
- *   It would turn out that for the drain and the source side, respectively, the difference between codes for the nodelet version
+ *   It would turn out that for the drain- and the source-side, respectively, the difference between codes for the nodelet version
  *   and the independent version is very small but subtle. In order to promote code re-usability,
  *   two base classes that serve as common "anscestors" should be added:
  *
@@ -46,9 +51,9 @@
  * ## Methodology of design
  *
  * The subtle difference between a nodelet and a non-nodelet is merely how they obtain their node handles.
- * The base classes (Source_base and Drain_base) will implement most essential functionality but leave the methods that returns
+ * The base classes will implement 99% essential functionality but leave the methods that returns
  * their (public) node handle and private node handle as pure virtual functions to be defined. Source_base and Drain_base, therefore,
- * are virtual base classes that cannot be instantiated.
+ * are *abstract* classes that cannot be instantiated.
  *
  * Refer to external source for how node handles work: http://wiki.ros.org/roscpp/Overview/NodeHandles, http://wiki.ros.org/nodelet
  *
@@ -78,9 +83,21 @@ namespace camera {
     class Source_base {
     
     public:
-        Source_base(); ///<Constructor
+        /**
+         * \brief Constructor
+         *
+         * depth_pub and rgb_pub are initialized as nullptr
+         */
+        Source_base();
         
-        virtual ~Source_base(); ///<Destructor
+        
+        /**
+         * \brief Destructor
+         *
+         * All threads from \ref thread_list are joined, the camera is stopped,
+         * the depth_pub and rgb_pub arrays are deleted.
+         */
+        virtual ~Source_base();
     
     protected:
         
@@ -95,15 +112,14 @@ namespace camera {
          * This method obtains the parameters (FPS, align, diversity) from ROS parameter server and does the following in order:
          * 1. Start the camera with the required FPS and alignment setting
          * 2. Populate rgb_pub and depth_pub with the required amount of publishers
-         * 3. Set up a new parameter called "rs_start_time". The drain node will have access to this parameter, though it is currently not utilized.
+         * 3. Set up a new parameter called "rs_start_time". The drain node will have access to this parameter (though it is currently not utilized).
          * 4. Instantiate matching number of alignment processing blocks and put them into the vector \ref align_to_color
          * 5. Launch the threads and let the publishers publish the images.
          *
          * Although what this method does is the same for both derived classes of source_base,
          * due to the fact that \ref initialize needs to call \ref getMyNodeHandle and \ref getMyPrivateNodeHandle,
-         * which are both pure virtual functions, Source_base cannot call \ref initialize within its own constructor.
-         * It has to be called by the derived classes.
-         *
+         * which are not implemented by the base class, Source_base cannot call \ref initialize within its own constructor.
+         * This method has to be called by the derived classes.
          */
         void initialize();
     
@@ -151,7 +167,7 @@ namespace camera {
         /**
         * \brief Configurable parameter
         *
-        * Default number of channel diversity (in other words, # of threads). It is equal to the size of the dynamically-allocated array Source_base::depth_pub and Source_base::rgb_pub, and the size of vector Source_base::thread_list.
+        * Default number of channel diversity (in other words, # of threads). It is equal to the size of the dynamically-allocated arrays Source_base::depth_pub and Source_base::rgb_pub, and the size of vector Source_base::thread_list.
         *
         * Default value: 1.
         */
@@ -206,6 +222,8 @@ namespace camera {
          * Each image message being transmitted in the ROS infrastructure is labelled with this serial number;
          * the value is stored at sensor_msgs::Image::header::frame_id.
          *
+         * Since this variable will be modified by many threads, a mutex is needed.
+         *
          * \see ROS documentation for sensor_msgs::Image:
          * http://docs.ros.org/kinetic/api/sensor_msgs/html/msg/Image.html
          */
@@ -242,9 +260,9 @@ namespace camera {
     
         
         /**
-         * \brief Publish the moment this method is called as a parameter. Units in microsecond.
+         * \brief Publish as a parameter the time that this method is called. Unit in microseconds.
          *
-         * Get the current Unit-time in microseconds and publish it to ROS parameter server in the name of "rs_start_time". This parameter is currently not used though.
+         * Get the current Unix-time (since 01/01/1970) in microseconds and publish it to ROS parameter server in the name of "rs_start_time". This parameter is currently not used anywhere.
          * @return Reference to self, enabling method chaining
          * \see helper::get_time_stamp_str
          */
@@ -259,10 +277,13 @@ namespace camera {
          * On the selection of which publisher to use, every thread has the choice to use any of rgb_pub and depth_pub. It determines which one to use by calculating the the image's serial number modulo the value of Source_base::diversity : ```index = local_seq  % diversity```. This can cause undesired behavior when two threads "collide" on the same publisher. It might be wiser to strictly assign each thread a specific RGB and depth publisher to use.
          *
          * kernelRoutine is designed to be run by a managed thread in an infinite loop.
-         * The first line of kernelRoutine is a thread interruption point. Whenever the thread receives an interruption, it will throw an exception and return from here.
+         * The first line of kernelRoutine is a thread interruption point, therefore whenever the thread receives an interruption, it will throw an exception and return from here.
          * Here is the exemplary usage of kernelRoutine:
          * ```
-         *  //define the infinite loop and the exit mechanism
+         * #include "camultiplex/my_nodes.h"
+         * #include <boost/thread.hpp>
+         *
+         *  //define the infinite loop and the exit mechanism; this is the lambda expression
          *  auto f=[&](){
          *      try {while(true) kernelRouine();}
          *      catch(boost::thread_interrupted&) {return;}
@@ -288,47 +309,105 @@ namespace camera {
          *
          * Each thread runs kernelRoutine in an infinite loop. They can be interrupted and then joined by calling boost::thread::interrupt() and boost::thread::join() upon them.
          *
-         * \see kernelRoutine for an example on how to use lambdas to generate an infinite loop which executes kernelRoutine
+         * \see kernelRoutine for an example on how to generate a lambda expression to execute kernelRoutine in an infinite loop
          */
         void launchThreads();
         
     };
     
-    
+    /**
+     * \class Source_nodelet
+     * \brief The nodelet version of source
+     */
     class Source_nodelet : public Source_base, public nodelet::Nodelet {
     protected:
+        /**
+         * @return The (public) multi-thread handle for this nodelet.
+         * \see The thread model for ROS nodelets:
+         * http://wiki.ros.org/nodelet#Threading_Model
+         */
         virtual ros::NodeHandle& getMyNodeHandle() override;
         
+        
+        /**
+         * @return The private multi-thread handle for this nodelet.
+         * \see The thread model for ROS nodelets:
+         * http://wiki.ros.org/nodelet#Threading_Model
+         *
+         * \see ROS naming conventions: http://wiki.ros.org/Names
+         */
         virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
     
     public:
-        //onInit is an override of nodelet::Nodelet::onInit()
+        /**
+         * \brief onInit is an override of nodelet::Nodelet::onInit()
+         *
+         * Calls Source_base::initialize
+         */
         virtual void onInit() override;
         
+        
+        /**
+         * \brief Deletes all parameters that the source node had added to ROS parameter server in Source_base::initialize
+         */
         virtual ~Source_nodelet();
     };
     
+    
+    /**
+    * \class Source_nodelet
+    * \brief The non-nodelet version of source
+    */
     class Source_independent : public Source_base {
+    private:
+        /**
+         * \brief The node's handle
+         *
+         * For the (public) node handle of an independent node, it does not need to be explicitly defined. It gets initialized (by calling ros::NodeHandle()) automatically during construction.
+         */
+        ros::NodeHandle nh;
+        
+        
+        /**
+         * \brief The node's private handle
+         *
+         * For a private node handle, any method called upon it resolves to its own "name scope". We want the "name scope" of this private handle to be the node's own name, therefore we have to explicitly call ros::NodeHandle(const std::string& namespace) and give it a name:
+         * ```
+         * npg = ros::NodeHandle(ros::this_node::getName());
+         * ```
+         * before calling Source_base::initialize().
+         */
+        ros::NodeHandle nph;
+
+    protected:
+        //equivalent of method void nodelet::Nodelet::onInit(), but since Source_independent is not dereived from Nodelet
+        //we just have to call selfInit() in constructor
+        /**
+         * \brief Counterpart of Source_nodelet::onInit() for the non-nodelet
+         *
+         * This method sets up the private node handle and then calls Source_base::initialize
+         *
+         * \see nph
+         */
+        void selfInit();
+    
+        
+        ///Returns \ref nh
+        virtual ros::NodeHandle& getMyNodeHandle() override;
+    
+        
+        ///Returns \ref nph
+        virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
+        
     public:
+        ///calls selfInit()
         Source_independent() {
             selfInit();
         }
         
+        
+        ///Deletes all parameters that the source node had added to ROS parameter server in Source_base::initialize
         virtual ~Source_independent();
-    
-    private:
-        ros::NodeHandle nh;
-        ros::NodeHandle nph;
-    
-    protected:
-        //equivalent of method void nodelet::Nodelet::onInit(), but since Source_independent is not dereived from Nodelet
-        //we just have to call selfInit() in constructor
-        void selfInit();
-        
-        virtual ros::NodeHandle& getMyNodeHandle() override;
-        
-        virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
-        
     };
     
     
@@ -414,7 +493,6 @@ namespace camera {
         virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
         
     };
-    
     
 }
 

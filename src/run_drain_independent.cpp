@@ -14,6 +14,7 @@ int main(int argc, char** argv){
 
     camera::Drain_independent drain_node;
 
+    //todo: consider using ros::MultiThreadedSpinner and eliminate the need to use boost::async in camera::Drain_base::drain_depth_callback (and drain_rgb_callback)
     ros::spin();
 
 }
