@@ -116,8 +116,6 @@ namespace camera {
         //If in the future, this Mat need to be *mutated*, we have to use toCvCopy instead of toCvShare.
         cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg);
         
-        //todo: consider removing boost::async. When we are using multi-thread node handles,
-        // spawning more threads should not be necessary
         boost::async(
                 boost::bind(&Drain_base::save_image,
                             this,
@@ -132,9 +130,9 @@ namespace camera {
     
     //callback to handle rgb frame messages
     void Drain_base::drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num) {
-
-        cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, "bgr8");
         
+        cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, "bgr8");
+
         boost::async(
                 boost::bind(&Drain_base::save_image,
                             this,
@@ -158,27 +156,27 @@ namespace camera {
         
         std::string myStr;
         
+        switch (channel) {
+            case RGB:
+                myStr = this->folder_path + std::string("/rgb_images/") + ss.str() + ".jpg";
+                break;
+            
+            case DEPTH:
+                myStr = this->folder_path + std::string("/depth_images/") + ss.str() + ".png";
+                break;
+            
+            default:
+                std::cout << "save_image: channel type is neither depth nor rgb, re-check your code!\n";
+                break;
+        }
+        
         try {
-            switch (channel) {
-                case RGB:
-                    myStr = this->folder_path + std::string("/rgb_images/") + ss.str() + ".jpg";
-                    break;
-                
-                case DEPTH:
-                    myStr = this->folder_path + std::string("/depth_images/") + ss.str() + ".png";
-                    break;
-                
-                default:
-                    std::cout << "save_image: channel type is neither depth nor rgb, re-check your code!\n";
-                    break;
-            }
+            cv::imwrite(myStr, cv_const_ptr->image);
         }
         catch (cv_bridge::Exception& e) {
             std::cout << "cv_bridge exception: " << e.what() << "\n";
             return *this;
         }
-        
-        cv::imwrite(myStr, cv_const_ptr->image);
         return *this;
     }
     
