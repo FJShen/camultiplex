@@ -19,7 +19,7 @@ ros::NodeHandle& Drain_independent::getMyPrivateNodeHandle() {
 }
 
 void Drain_independent::selfInit() {
-    nph = ros::NodeHandle(ros::this_node::getName()); //assign the name of this node to nph, everything that nph have access to is in the private namespace of this node
+    nph = ros::NodeHandle(ros::this_node::getName()); //assign the name of this node to nph; everything that nph have access to is in the private namespace of this node
     initialize();
     std::cout << ("Camera independent drain node selfInit called\n");
 }

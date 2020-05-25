@@ -127,24 +127,13 @@ namespace camera {
         );
         
         depth_counter.updateSeq(std::stoul(msg->header.frame_id));
-        
-        //print debug information
-//	NODELET_DEBUG_STREAM("saved depth frame" << (msg->header.frame_id));
-//        std::cout << "saved depth frame" << (msg->header.frame_id) << "\n";
     }
     
     
     //callback to handle rgb frame messages
     void Drain_base::drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num) {
 
-//        NODELET_DEBUG_STREAM( "received rgb frame"
-//			      << (msg->header.frame_id) << " from channel "
-//			      << std::to_string(channel_num));
-//        std::cout << "received rgb frame"
-//                  << (msg->header.frame_id) << " from channel "
-//                  << std::to_string(channel_num) << "\n";
-        
-        cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
+        cv_bridge::CvImageConstPtr cv_const_ptr = cv_bridge::toCvShare(msg, "bgr8");
         
         boost::async(
                 boost::bind(&Drain_base::save_image,
@@ -155,9 +144,6 @@ namespace camera {
         );
         
         rgb_counter.updateSeq(std::stoul(msg->header.frame_id));
-
-//        NODELET_DEBUG_STREAM("saved rgb frame" << (msg->header.frame_id));
-//        std::cout << "saved rgb frame" << (msg->header.frame_id) << "\n";
     }
     
     
@@ -174,32 +160,25 @@ namespace camera {
         
         try {
             switch (channel) {
-                
                 case RGB:
-                    //cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
                     myStr = this->folder_path + std::string("/rgb_images/") + ss.str() + ".jpg";
                     break;
                 
                 case DEPTH:
-                    //cv_const_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO16);
                     myStr = this->folder_path + std::string("/depth_images/") + ss.str() + ".png";
                     break;
                 
                 default:
-//		NODELET_ERROR("save_image: channel type is neither depth nor rgb, re-check your code!");
                     std::cout << "save_image: channel type is neither depth nor rgb, re-check your code!\n";
                     break;
             }
         }
         catch (cv_bridge::Exception& e) {
-//	    NODELET_ERROR("cv_bridge exception: %s", e.what());
             std::cout << "cv_bridge exception: " << e.what() << "\n";
             return *this;
         }
         
-        
         cv::imwrite(myStr, cv_const_ptr->image);
-        
         return *this;
     }
     

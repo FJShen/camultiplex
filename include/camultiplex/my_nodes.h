@@ -131,6 +131,8 @@ namespace camera {
         /**
          * \brief Dynamical array for depth publishers
          *
+         * Depth images are in MONO16 format.
+         *
          * Will be allocated memory when Source_base::initialize is called. Memory freed in destructor.
          *
          * Raw pointers are prone to memory leakage and illegal access. Shall be safer if std::vector is used.
@@ -140,6 +142,8 @@ namespace camera {
         
         /**
          * \brief Dynamical array for RGB publishers
+         *
+         * RGB images are in RGB8 format. The receiver will need to convert this format into BGR8 before calling cv::imwrite. See \ref Drain_base::drain_rgb_callback.
          *
          * On how this is used and its caveats, please refer to \ref depth_pub
          */
@@ -274,7 +278,7 @@ namespace camera {
         /**
          * \brief The core routine that the source does - to interface with the camera and transmit images
          *
-         * The routine will wait blockingly for the next frame from the camera (and process it) and copy it to an instance of ROS's sensor_msgs::Image. The message is then published.
+         * The routine will wait blockingly for the next frame from the camera (and process it) and copy it to an instance of ROS's sensor_msgs::Image. The message is then published. Depth images are encoded in MONO16; RGB images are encoded in RGB8.
          *
          * On the selection of which publisher to use, every thread has the choice to use any of rgb_pub and depth_pub. It determines which one to use by calculating the the image's serial number modulo the value of Source_base::diversity : ```index = local_seq  % diversity```. This can cause undesired behavior when two threads "collide" on the same publisher. It might be wiser to strictly assign each thread a specific RGB and depth publisher to use.
          *
@@ -357,7 +361,7 @@ namespace camera {
     
     
     /**
-    * \class Source_nodelet
+    * \class Source_independent
     * \brief The non-nodelet version of source
     */
     class Source_independent : public Source_base {
@@ -422,8 +426,8 @@ namespace camera {
      *
      * ## Usage
      * Source_drain is an abstract class that provides nearly all functionality needed by a source node which interfaces with the camera.
-     * Its two pure virtual functions, getMyNodeHandle and getMyPrivateNodeHandle need to be implemented
-     * by derived class depending on whether they are nodes or nodelets.
+     * Its two pure virtual functions, getMyNodeHandle and getMyPrivateNodeHandle need to be implemented by
+     * derived classes.
      */
     class Drain_base {
     public:
@@ -482,11 +486,7 @@ namespace camera {
         /**
          * \brief Manages the periodic display of receiver information
          *
-         * timerCallback is set to be called every 5 seconds to display information about the number of received frames:
-         * ```
-         * Drain: Depth received xxx frames, total transmission loss estimate is xxx frames
-         * Drain: RGB received xxx frames, total transmission loss estimate is xxx frames
-         * ```
+         * timerCallback is set to be called every 5 seconds to display information about the number of received frames.
          *
          * \see timerCallback
          */
@@ -502,16 +502,16 @@ namespace camera {
          * Example:
          * ```
          * void callback(const sensor_msgs::Image::ConstPtr& msg){
+         *      //process images
          *      //...
          *
          *      //update counter with serial number
-         *      //need to convert string-type frame id into unsigned int
          *      depth_counter.updateSeq(std::stoul(msg->header.frame_id));
          * }
          * ```
          *
          * helper::Counter has an in-built mutex to ensure thread safety.
-         * No need for caller to do additional protection.
+         * No need for the caller to do additional protection.
          * \see helper::Counter
          */
         helper::Counter depth_counter;
@@ -527,12 +527,14 @@ namespace camera {
         
         /**
          * \brief The path where the folder will be created
+         * \see create_directories
          */
         std::string base_path = camera::Default_path;
         
         
         /**
-         * \brief Path of the created directory (the directory that contains rgb_images and depth_images)
+         * \brief Path of the created directory (the directory that contains the sub-directories rgb_images and depth_images)
+         * \see create_directories
          */
         std::string folder_path;
         
@@ -561,7 +563,7 @@ namespace camera {
         /**
          * \brief Define as many subscribers as required by diversity
          *
-         * The following topics will be subscribed to:
+         * The following topics will be subscribed to by the drain:
          *
          * camultiplex/depthx, where x=0, 1, ..., diversity-1
          *
@@ -574,71 +576,139 @@ namespace camera {
         
         /**
          * \brief Callback function to process depth channel images
+     
+         * @param msg A shared_ptr to the received message.
+         * @param channel_num Index of the topic being subscribed to. Currently unused.
+         * \see drain_rgb_callback
+         */
+        void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num);
+    
+        
+        /**
+         * \brief Callback function to process RGB channel images
          *
          * Callback function uses cv_bridge::toCvShare to convert the received sensor_msgs::Image into a read-only reference to an instance of OpenCV Mat
          *
          * Another choice is to call cv_bridge::toCvCopy instead of toCvShare; this allows the callback function to do mutations on the CV image.
+         *
+         * The second parameter of cv_bridge::toCvShare - encoding - infers the desired encoding of the image data. If left empty, the returned CvImage has the same encoding as the input image.
+         *
+         * In the case of our RGB channel image, it arrives from the source encoded in RGB8 format (24 bits); however when storing the image with cv::imwrite, only BGR8 format is allowed. Therefore "bgr8" is passed in.
+         *
+         * @param msg A shared_ptr to the received message.
+         * @param channel_num Index of the topic being subscribed to. Currently unused.
          * \see Turotial for ROS package cv_bridge on how to convert between ROS images and CV images:
          * http://wiki.ros.org/cv_bridge/Tutorials/UsingCvBridgeToConvertBetweenROSImagesAndOpenCVImages
          * \see ROS publisher and subscribers
          * http://wiki.ros.org/roscpp/Overview/Publishers%20and%20Subscribers
-         * @param msg A shared_ptr to the received message.
-         * @param index Index of the topic being subscribed to.
          */
-        void drain_depth_callback(const sensor_msgs::Image::ConstPtr& msg, int index);
+        void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int channel_num);
     
         
         /**
-         * \brief Callback function to process depth channel images
-         * \see drain_depth_callback
-         * @param msg A shared_ptr to the received message.
-         * @param index Index of the topic being subscribed to.
+         * \brief Save image to directory.
+         * Depth images (encoded in 16-bit unsigned) are saved in PNG format.
+         * RGB images (encoded in BGR8 order) are saved in JPG format.
+         * @param cv_ptr CVImageConstPtr as generated in rgb_ or depth_callback.
+         * @param header Header of the image message.
+         * @param channel Specifies whether the image is depth or RGB. Valid values are RGB or DEPTH.
+         * @return  Reference to self, allowing method chaining.
+         * \see OpenCV cv::imwrite:
+         * https://docs.opencv.org/3.4/d4/da8/group__imgcodecs.html
          */
-        void drain_rgb_callback(const sensor_msgs::Image::ConstPtr& msg, int index);
+        Drain_base& save_image(cv_bridge::CvImageConstPtr cv_ptr, std_msgs::Header header, unsigned int channel);
     
         
-        Drain_base& save_image(cv_bridge::CvImageConstPtr, std_msgs::Header, unsigned int);
-    
+        
+        /**
+         * \brief Prints the transmission loss estimate.
+         * Being called by the timer everytime the timer has expired.
+         *
+         * Displays the following information when called:
+         * ```
+         * Drain: Depth received xxx frames, total transmission loss estimate is xxx frames
+         * Drain: RGB received xxx frames, total transmission loss estimate is xxx frames
+         * ```
+         * \see \ref timer
+         */
         void timerCallback(const ros::TimerEvent& event);
         
     };
     
     
+    /**
+     * \class Drain_nodelet
+     * \brief The nodelet version of of Drain
+     */
     class Drain_nodelet : public Drain_base, public nodelet::Nodelet {
     protected:
+        /**
+         * @return The (public) multi-thread handle for this nodelet.
+         * \see The thread model for ROS nodelets:
+         * http://wiki.ros.org/nodelet#Threading_Model
+         */
         virtual ros::NodeHandle& getMyNodeHandle() override;
-        
+    
+    
+        /**
+         * @return The private multi-thread handle for this nodelet.
+         * \see The thread model for ROS nodelets:
+         * http://wiki.ros.org/nodelet#Threading_Model
+         * \see ROS naming conventions: http://wiki.ros.org/Names
+         */
         virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
     
     public:
-        //Drain_nodelet::onInit is override to nodelet::Nodelet::onInit
+        /**
+         * \brief Override to nodelet::Nodelet::onInit
+         * Calls Drain_base::initialize.
+         */
         virtual void onInit() override;
         
+        
+        ///Deletes all parameters (diversity, base_path) related to the drain.
         virtual ~Drain_nodelet();
         
     };
     
+    
+    
+    /**
+     * \class Drain_independent
+     * \brief The non-nodelet version of Drain
+     */
     class Drain_independent : public Drain_base {
     public:
+        /**
+         * \brief Constructor
+         * Calls selfInit.
+         */
         Drain_independent() {
             selfInit();
         }
-        
+    
+    
+        ///Deletes all parameters (diversity, base_path) related to the drain.
         virtual ~Drain_independent();
     
     private:
-        ros::NodeHandle nh;
-        ros::NodeHandle nph; //private handle
+        ros::NodeHandle nh;  ///Public node handle.
+        ros::NodeHandle nph; ///Private node handle
         
-        //equivalent of method void nodelet::Nodelet::onInit(), but since Source_independent is not dereived from Nodelet
-        //we just have to call selfInit() in constructor
+        
+        /**
+         * \brief Counterpart of Drain_nodelet::onInit
+         * Sets up private node handle then calls Drain_independent::initialize.
+         */
         void selfInit();
     
     protected:
+        /// Returns \ref nh.
         virtual ros::NodeHandle& getMyNodeHandle() override;
         
-        virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
         
+        ///Returns \ref nph.
+        virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
     };
     
 }
