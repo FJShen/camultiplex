@@ -1,6 +1,6 @@
 
 #Doxygen files
-doc/*
+#doc/*
 
 #IDE files
 .idea/*
