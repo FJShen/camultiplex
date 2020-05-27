@@ -27,7 +27,7 @@ namespace camera {
         
         for (auto& x : thread_list) {
             if (!x.try_join_for(boost::chrono::milliseconds(100))) {
-                std::cerr << ("failed to join a thread\n");
+                std::cout << ("failed to join a thread\n");
             }
         }
         
@@ -124,7 +124,7 @@ namespace camera {
             p.start(c);
         }
         catch (rs2::error& err) {
-            std::cerr << "Caught rs2::error, failed_function=" << err.get_failed_function() << ", message= "
+            std::cout << "Caught rs2::error, failed_function=" << err.get_failed_function() << ", message= "
                       << err.what() << "\n";
         }
         
