@@ -1,0 +1,4 @@
+<map id="camera::Drain_base" name="camera::Drain_base">
+<area shape="rect" id="node2" href="$classcamera_1_1Drain__independent.html" title="The non&#45;nodelet version of Drain. " alt="" coords="5,80,187,107"/>
+<area shape="rect" id="node3" href="$classcamera_1_1Drain__nodelet.html" title="The nodelet version of of Drain. " alt="" coords="211,80,365,107"/>
+</map>

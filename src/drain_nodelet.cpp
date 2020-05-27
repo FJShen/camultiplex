@@ -5,20 +5,26 @@
 
 using namespace camera;
 
-ros::NodeHandle& drain_nodelet::getMyNodeHandle() {
+ros::NodeHandle& Drain_nodelet::getMyNodeHandle() {
+    ///getMTNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
+    ///\see The thread model for ROS nodelets:
+    ///http://wiki.ros.org/nodelet#Threading_Model
     return getMTNodeHandle();
 }
 
-ros::NodeHandle& drain_nodelet::getMyPrivateNodeHandle() {
+ros::NodeHandle& Drain_nodelet::getMyPrivateNodeHandle() {
+    ///getMTPrivateNodeHandle allows the all publishers/subscribers to run on multiple threads in the thread pool of nodelet manager.
+    ///\see The thread model for ROS nodelets:
+    ///http://wiki.ros.org/nodelet#Threading_Model
     return getMTPrivateNodeHandle();
 }
 
-void drain_nodelet::onInit(){
+void Drain_nodelet::onInit(){
     initialize();
     std::cout<<("Camera drain node onInit called\n");
 }
 
-drain_nodelet::~drain_nodelet() {
+Drain_nodelet::~Drain_nodelet() {
     ros::NodeHandle &rhp = getMyPrivateNodeHandle();
     rhp.deleteParam("diversity");
     rhp.deleteParam("base_path");

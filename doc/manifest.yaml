@@ -1,0 +1,23 @@
+actions: []
+authors: Fangjia Shen <shen449@purdue.edu>
+brief: ''
+bugtracker: ''
+depends:
+- catkin
+- roscpp
+- pluginlib
+- cv_bridge
+- message_runtime
+- sensor_msgs
+- message_generation
+- std_msgs
+- nodelet
+description: The camultiplex package
+license: MIT
+maintainers: Fangjia Shen <shen449@purdue.edu>
+msgs:
+- TTest
+package_type: package
+repo_url: ''
+srvs: []
+url: http://github.com/FJShen/camultiplex

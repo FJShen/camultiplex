@@ -12,8 +12,7 @@ int main(int argc, char** argv){
 
     ros::init(argc, argv, "independent_drain_node");
 
-    camera::drain_independent drain_node;
+    camera::Drain_independent drain_node;
 
     ros::spin();
-
 }

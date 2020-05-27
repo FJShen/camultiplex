@@ -4,7 +4,7 @@
 
 using namespace camera;
 
-source_independent::~source_independent(){
+Source_independent::~Source_independent(){
     ros::NodeHandle &rhp = getMyPrivateNodeHandle();
     rhp.deleteParam("diversity");
     rhp.deleteParam("FPS");
@@ -14,16 +14,16 @@ source_independent::~source_independent(){
     rh.deleteParam("rs_start_time");
 }
 
-void source_independent::selfInit(){
+void Source_independent::selfInit(){
     nph = ros::NodeHandle(ros::this_node::getName());
     initialize();
-    std::cout << ("Camera independent source node selfInit called\n");
+//    std::cout << ("Camera Source_independent selfInit called\n");
 }
 
-ros::NodeHandle& source_independent::getMyNodeHandle(){
+ros::NodeHandle& Source_independent::getMyNodeHandle(){
     return nh;
 }
 
-ros::NodeHandle& source_independent::getMyPrivateNodeHandle(){
+ros::NodeHandle& Source_independent::getMyPrivateNodeHandle(){
     return nph;
 }

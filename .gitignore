@@ -1,4 +1,7 @@
 
+#Doxygen files
+#doc/*
+
 #IDE files
 .idea/*
 cmake*/*

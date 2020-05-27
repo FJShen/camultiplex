@@ -1,0 +1,8 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classcamera_1_1Drain__base.html" title="Interfaces with the file system. Converts sensor_msgs::Image into .jpg and .png format and stores the..." alt="" coords="11,12,149,39"/>
+<area shape="rect" id="node2" href="$classcamera_1_1Drain__independent.html" title="The non&#45;nodelet version of Drain. " alt="" coords="207,5,389,32"/>
+<area shape="rect" id="node3" href="$classcamera_1_1Drain__nodelet.html" title="The nodelet version of of Drain. " alt="" coords="221,56,375,83"/>
+<area shape="rect" id="node5" href="$classcamera_1_1Source__nodelet.html" title="The nodelet version of source. " alt="" coords="217,107,379,133"/>
+<area shape="rect" id="node6" href="$classcamera_1_1Source__base.html" title="Interfaces with the camera and publishes the image frames in the form of sensor_msgs::Image. " alt="" coords="5,132,155,159"/>
+<area shape="rect" id="node7" href="$classcamera_1_1Source__independent.html" title="The non&#45;nodelet version of source. " alt="" coords="203,157,393,184"/>
+</map>
