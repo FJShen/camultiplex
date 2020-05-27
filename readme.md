@@ -1,19 +1,21 @@
 The format of this markdown file is best manifested when the file is rendered in HTML format.
 
 # camultiplex
-This project is developed in catkin workspace, aimed at utilizing **multi-thread processing** while taking advantage from the `nodelet`. Data are sent via **channel diversity** on the granularity of messages. 
+This project is developed in catkin workspace, aimed at utilizing **multi-thread processing** and taking advantage from the **nodelet**. Data are sent via **multiple channels** in the form of ROS messages.
+
+This package can either be configured to run as **nodelets** on a single computer or as independent nodes across a computer network. 
 
 ***
 
-Nodelets under a same nodelet manager share the common memory space, which eliminates the need to copy message data from one node to the other. This is especially useful when the computation is heavy. This sharing of memory is enabled by using `SharePtr`. However, due to this limitation it becomes impossible to run concurrently multiple instances of the callback function on a topic: there is only one "slot" for the message to be processed, so the messages have to be processed in serial.
+Nodelets under a same nodelet manager share the common memory space, which eliminates the need to copy data from one node to the other. This is especially useful when the computation is heavy. This sharing of memory is enabled by using `SharedPtr` on the lower level, a feature of modern C++. 
 
-To solve this problem, I create multiple topics, and rotationally send messages to different channels. This is similar to how antenna diversity works. As long as the subscriber has more open channels than the publisher, no messages will be missed due to diversity.
+To prevent the throughput from being throttled by the performance of a single CPU core, multiple threads can be utilized which are expected to run on as many cores as the machine possesses. This is made possible by defining more than one subscriber-publisher pairs, each of them communicating on their own channel (aka. ROS topic). When a source node owns multiple publishers, it rotationally lets different publishers to publish the message, which in turn, appears on different channels. In order to ensure that all messages are received by the drain node, it is necessary to let the drain has as many subscribers as the number of publishers. 
 
-Based on observation, two channels shall be enough for 60 FPS 640*480 pixel resolution.  
+Based on observation, two channels (2\*RGB + 2\*Depth) shall be enough for 60 FPS 640*480 pixel resolution.  
 
 ***
 ## Dependencies
-ROS & catkin
+ROS and catkin (comes with ROS)
 
 Boost::thread, Boost::filesystem, Boost::chrono
 
@@ -22,6 +24,7 @@ OpenCV
 ***
 
 ## Compilation of code
+
 <pre>
 cd <i>your_catkin_workspace_directory</i>/src
 git clone http://github.com/FJShen/camultiplex
@@ -33,7 +36,7 @@ catkin_make --pkg camultiplex
 
 This is what your directory should typically look like (note that before you call catkin_make, 'src' might be the only directory that you see in the workspace):
 
-<pre>
+```
 nvidia@virtual-ubuntu:~/catkin_ws$ tree -L 2
 .
 ├── build
@@ -45,7 +48,7 @@ nvidia@virtual-ubuntu:~/catkin_ws$ tree -L 2
 └── src
     ├──<b> camultiplex </b>
     └──<i> other packets </i>
-</pre>
+```
 
 ***
 
@@ -79,7 +82,7 @@ rosrun nodelet nodelet manager __name:=nodelet_manager
 rosrun nodelet nodelet load camultiplex/drain nodelet_manager _diversity:=2 _base_path:="/media/nvidia/ExtremeSSD"
 ```
 
-**4 load camera source as a nodelet to be managed by nodelet_manager**
+**4. load camera source as a nodelet to be managed by nodelet_manager**
 ```
 rosrun nodelet nodelet load camultiplex/source nodelet_manager _diversity:=2 _FPS:=60 _align:=true
 ```
@@ -98,7 +101,7 @@ roslaunch camultiplex independent_drain.launch
 roslaunch camultiplex independent_source.launch
 ```
 
-You need to configure the parameters in the files ```./launch/independent_source.launch``` and ```./launch/ independent_drain.launch``` respectively.
+You need to configure the parameters in the files ```./launch/independent_source.launch``` and ```./launch/independent_drain.launch``` respectively.
 
 By your calling ```roslaunch```, ```roscore``` is automatically called.
 
@@ -116,19 +119,21 @@ rosrun camultiplex independent_drain _diversity:=2 _base_path:="/media/nvidia/Ex
 ```
 
 **3. bring up camera source**
+
 ```
 rosrun camultiplex independent_source _diversity:=2 _FPS:=60 _align:=true
 ```
+
 ---
 
-#### *Running nodes on different hosts in LAN
-When running a set of nodes that span across a network (e.g. LAN) who need to share information by publishing/subscribing to topics, ```roscore``` only need to be called on one host (i.e. there is only one master in the network). 
+#### *Running independent nodes on different hosts in LAN
+When running a set of nodes that span across a network (e.g. LAN), ```roscore``` only need to be called on one host (i.e. there is only one master in the network). 
 
-Suppose we have two hosts (computers): H1 and H2; we want the master to be run on H1:
+Suppose we have two hosts (computers): H1 (192.168.0.11) and H2 (192.168.0.22); we want the master to be run on H1:
 
 1. On H1 and H2 separately ```export ROS_IP=[own_ip_address]``` (this step might not be needed)
 
-2. On H2 ```export ROS_MASTER_URI=http://[h1_ip_addr]:11311```. 
+2. On H2 ```export ROS_MASTER_URI=http://[h1_ip_addr]:11311``` (i.e. export ROS_MASTER_URI=http://192.168.0.11:11311). 
 
 3. Call ```roscore``` only on H1.
 
@@ -136,14 +141,14 @@ Suppose we have two hosts (computers): H1 and H2; we want the master to be run o
 
 Note: When running a network of ROS nodes on different hosts, nodelets will not be a choice - it is the shared memory mechanism that makes nodelets work.  
 
-***
+---
 
 ## Table of Parameters
 | Parameter        | Type   | User configurable? | Where to configure                              | Usage                                    |
 |------------------|--------|--------------------|-------------------------------------------------|------------------------------------------|
-| *drain*/diversity  | int    | Yes                | Drain side                                      | Number of threads that a drain uses (1)   |
+| *drain*/diversity  | int    | Yes                | Drain side                                    | Number of subscribers that a drain uses (1),(2)   |
 | *drain*/base_path  | string | Yes                | Drain side                                      | Path for the drain to store images       |
-| *source*/diversity | int    | Yes                | Source side                                     | Number of threads that a source uses     |
+| *source*/diversity | int    | Yes                | Source side                                     | Number of publishers that a source uses (1),(3)     |
 | *source*/FPS       | int    | Yes                | Source side                                     | Frames-per-second of the camera          |
 | *source*/align     | bool   | Yes                | Source side                                     | Align depth image to RGB image           |
 | /rs_start_time   | string | No                 | Global parameter set by  source node at runtime | Unix time of when the camera was started |
@@ -152,6 +157,18 @@ Comments:
 
 1) Drain diversity should be no less than source diversity lest some active topics not be subscribed by the drain
 
+2) The number of subscribers are counted in pairs of RGB-Depth subscribers - therefore 1 RGB subscriber and 1 Depth subscriber are counted as "one" subscriber in the context of diversity. 
 
+3) Referring to (2), the same logic applies for publishers.
+
+---
+
+## Generation of documentation
+
+In the package's directory (camultiplex/) call: 
+
+```rosdoc_lite .```
+
+Doxygen will be called and the documentation mainpage will be located at `camultiplex/doc/html/index.html`
 
 

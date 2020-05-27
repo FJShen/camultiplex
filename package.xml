@@ -75,5 +75,9 @@
   <export>
   	<!-- "camultiplex" is the nodelet plugin name -->
   	<nodelet plugin="${prefix}/camultiplex.xml" />
+
+    <!--ROSDOC configurations-->
+    <rosdoc config="rosdoc.yaml" />
   </export>
+
 </package>
