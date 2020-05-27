@@ -171,4 +171,11 @@ In the package's directory (camultiplex/) call:
 
 Doxygen will be called and the documentation mainpage will be located at `camultiplex/doc/html/index.html`
 
+\see http://wiki.ros.org/rosdoc_lite
 
+
+---
+
+## Contact
+Fangjia Shen (shen449@purdue.edu) 
+Purdue University School of Electrical & Computer Engineering
