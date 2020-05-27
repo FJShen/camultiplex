@@ -1,6 +1,7 @@
 The format of this markdown file is best manifested when the file is rendered in HTML format.
 
 # camultiplex
+
 This project is developed in catkin workspace, aimed at utilizing **multi-thread processing** and taking advantage from the **nodelet**. Data are sent via **multiple channels** in the form of ROS messages.
 
 This package can either be configured to run as **nodelets** on a single computer or as independent nodes across a computer network. 
@@ -15,6 +16,7 @@ Based on observation, two channels (2\*RGB + 2\*Depth) shall be enough for 60 FP
 
 ***
 ## Dependencies
+
 ROS and catkin (comes with ROS)
 
 Boost::thread, Boost::filesystem, Boost::chrono
@@ -55,48 +57,54 @@ nvidia@virtual-ubuntu:~/catkin_ws$ tree -L 2
 ## Execution of nodes
 
 ### I.  Nodelets mode
+
 #### Launchfile method (roslaunch)
-**1. bring up everything at once**
+
+1. bring up everything at once
 ```
 roslaunch camultiplex launch_everything.launch
 ```
+
 You need to configure the parameters in the files ```./launch/source.launch``` and ```./launch/drain.launch``` respectively.
 
 By your calling ```roslaunch```, ```roscore``` is automatically called.
 
 ---
 
-
 #### Command Line method (rosrun)
-**1. summon the master**
+
+1. summon the master
 ```
 roscore
 ```
-**2. bring up nodelet manager**
+
+2. bring up nodelet manager
 ```
 rosrun nodelet nodelet manager __name:=nodelet_manager
 ```
-**3. load camera drain as a nodelet to be managed by nodelet_manager**
 
+3. load camera drain as a nodelet to be managed by nodelet_manager
 ```
 rosrun nodelet nodelet load camultiplex/drain nodelet_manager _diversity:=2 _base_path:="/media/nvidia/ExtremeSSD"
 ```
 
-**4. load camera source as a nodelet to be managed by nodelet_manager**
+4. load camera source as a nodelet to be managed by nodelet_manager
 ```
 rosrun nodelet nodelet load camultiplex/source nodelet_manager _diversity:=2 _FPS:=60 _align:=true
 ```
----
-### II. Independent nodes mode
-#### Launchfile method (roslaunch)
-**1. bring up camera drain**
 
+---
+
+### II. Independent nodes mode
+
+#### Launchfile method (roslaunch)
+
+1. bring up camera drain
 ```
 roslaunch camultiplex independent_drain.launch
 ```
 
-**2. bring up camera source**
-
+2. bring up camera source
 ```
 roslaunch camultiplex independent_source.launch
 ```
@@ -106,20 +114,20 @@ You need to configure the parameters in the files ```./launch/independent_source
 By your calling ```roslaunch```, ```roscore``` is automatically called.
 
 ---
+
 #### Command Line method (rosrun)
-**1. summon the master**
+
+1. summon the master
 ```
 roscore
 ```
 
-**2. bring up camera drain**
-
+2. bring up camera drain
 ```
 rosrun camultiplex independent_drain _diversity:=2 _base_path:="/media/nvidia/ExtremeSSD"
 ```
 
-**3. bring up camera source**
-
+3. bring up camera source
 ```
 rosrun camultiplex independent_source _diversity:=2 _FPS:=60 _align:=true
 ```
@@ -127,6 +135,7 @@ rosrun camultiplex independent_source _diversity:=2 _FPS:=60 _align:=true
 ---
 
 #### *Running independent nodes on different hosts in LAN
+
 When running a set of nodes that span across a network (e.g. LAN), ```roscore``` only need to be called on one host (i.e. there is only one master in the network). 
 
 Suppose we have two hosts (computers): H1 (192.168.0.11) and H2 (192.168.0.22); we want the master to be run on H1:
@@ -144,6 +153,7 @@ Note: When running a network of ROS nodes on different hosts, nodelets will not 
 ---
 
 ## Table of Parameters
+
 | Parameter        | Type   | User configurable? | Where to configure                              | Usage                                    |
 |------------------|--------|--------------------|-------------------------------------------------|------------------------------------------|
 | *drain*/diversity  | int    | Yes                | Drain side                                    | Number of subscribers that a drain uses (1),(2)   |
@@ -177,5 +187,6 @@ Doxygen will be called and the documentation mainpage will be located at `camult
 ---
 
 ## Contact
+
 Fangjia Shen (shen449@purdue.edu) 
 Purdue University School of Electrical & Computer Engineering

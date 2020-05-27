@@ -45,21 +45,34 @@ catkin_make --pkg camultiplex
 <h2>Execution of nodes</h2>
 <h3>I. Nodelets mode</h3>
 <h4>Launchfile method (roslaunch)</h4>
-<p><b>1. bring up everything at once</b> </p><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;roslaunch camultiplex launch_everything.launch</div></div><!-- fragment --><p> You need to configure the parameters in the files <code>./launch/source.launch</code> and <code>./launch/drain.launch</code> respectively.</p>
+<ol type="1">
+<li>bring up everything at once <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;roslaunch camultiplex launch_everything.launch</div></div><!-- fragment --></li>
+</ol>
+<p>You need to configure the parameters in the files <code>./launch/source.launch</code> and <code>./launch/drain.launch</code> respectively.</p>
 <p>By your calling <code>roslaunch</code>, <code>roscore</code> is automatically called. </p><hr/>
 <h4>Command Line method (rosrun)</h4>
-<p><b>1. summon the master</b> </p><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;roscore</div></div><!-- fragment --><p> <b>2. bring up nodelet manager</b> </p><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;rosrun nodelet nodelet manager __name:=nodelet_manager</div></div><!-- fragment --><p> <b>3. load camera drain as a nodelet to be managed by nodelet_manager</b></p>
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;rosrun nodelet nodelet load camultiplex/drain nodelet_manager _diversity:=2 _base_path:=&quot;/media/nvidia/ExtremeSSD&quot;</div></div><!-- fragment --><p><b>4. load camera source as a nodelet to be managed by nodelet_manager</b> </p><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;rosrun nodelet nodelet load camultiplex/source nodelet_manager _diversity:=2 _FPS:=60 _align:=true</div></div><!-- fragment --><hr/>
- <h3>II. Independent nodes mode</h3>
+<ol type="1">
+<li>summon the master <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;roscore</div></div><!-- fragment --></li>
+<li>bring up nodelet manager <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;rosrun nodelet nodelet manager __name:=nodelet_manager</div></div><!-- fragment --></li>
+<li>load camera drain as a nodelet to be managed by nodelet_manager <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;rosrun nodelet nodelet load camultiplex/drain nodelet_manager _diversity:=2 _base_path:=&quot;/media/nvidia/ExtremeSSD&quot;</div></div><!-- fragment --></li>
+<li>load camera source as a nodelet to be managed by nodelet_manager <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;rosrun nodelet nodelet load camultiplex/source nodelet_manager _diversity:=2 _FPS:=60 _align:=true</div></div><!-- fragment --> <hr/>
+</li>
+</ol>
+<h3>II. Independent nodes mode</h3>
 <h4>Launchfile method (roslaunch)</h4>
-<p><b>1. bring up camera drain</b></p>
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;roslaunch camultiplex independent_drain.launch</div></div><!-- fragment --><p><b>2. bring up camera source</b></p>
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;roslaunch camultiplex independent_source.launch</div></div><!-- fragment --><p>You need to configure the parameters in the files <code>./launch/independent_source.launch</code> and <code>./launch/independent_drain.launch</code> respectively.</p>
+<ol type="1">
+<li>bring up camera drain <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;roslaunch camultiplex independent_drain.launch</div></div><!-- fragment --></li>
+<li>bring up camera source <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;roslaunch camultiplex independent_source.launch</div></div><!-- fragment --></li>
+</ol>
+<p>You need to configure the parameters in the files <code>./launch/independent_source.launch</code> and <code>./launch/independent_drain.launch</code> respectively.</p>
 <p>By your calling <code>roslaunch</code>, <code>roscore</code> is automatically called. </p><hr/>
- <h4>Command Line method (rosrun)</h4>
-<p><b>1. summon the master</b> </p><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;roscore</div></div><!-- fragment --><p><b>2. bring up camera drain</b></p>
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;rosrun camultiplex independent_drain _diversity:=2 _base_path:=&quot;/media/nvidia/ExtremeSSD&quot;</div></div><!-- fragment --><p><b>3. bring up camera source</b></p>
-<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;rosrun camultiplex independent_source _diversity:=2 _FPS:=60 _align:=true</div></div><!-- fragment --> <hr/>
+<h4>Command Line method (rosrun)</h4>
+<ol type="1">
+<li>summon the master <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;roscore</div></div><!-- fragment --></li>
+<li>bring up camera drain <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;rosrun camultiplex independent_drain _diversity:=2 _base_path:=&quot;/media/nvidia/ExtremeSSD&quot;</div></div><!-- fragment --></li>
+<li>bring up camera source <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;rosrun camultiplex independent_source _diversity:=2 _FPS:=60 _align:=true</div></div><!-- fragment --> <hr/>
+</li>
+</ol>
 <h4>*Running independent nodes on different hosts in LAN</h4>
 <p>When running a set of nodes that span across a network (e.g. LAN), <code>roscore</code> only need to be called on one host (i.e. there is only one master in the network).</p>
 <p>Suppose we have two hosts (computers): H1 (192.168.0.11) and H2 (192.168.0.22); we want the master to be run on H1:</p>
@@ -105,7 +118,7 @@ catkin_make --pkg camultiplex
 <hr size="1"><div style="align: right;">
 <a href="http://wiki.ros.org/camultiplex">camultiplex</a><br />
 Author(s): Fangjia Shen <shen449@purdue.edu></br />
-<small>autogenerated on Wed May 27 2020 17:39:32</small>
+<small>autogenerated on Wed May 27 2020 17:53:31</small>
 </div>
 </body>
 </html>
