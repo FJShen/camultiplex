@@ -3,7 +3,7 @@
   <group ns="camera_multiplex">
     <include file="$(find camultiplex)/launch/manager.launch"/>
     <include file="$(find camultiplex)/launch/drain.launch"/>
-    <include file="$(find camultiplex)/launch/source.launch"/>
+    <!--include file="$(find camultiplex)/launch/source.launch"/-->
   </group>
   
 </launch>

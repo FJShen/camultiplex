@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="camultiplex" type="independent_source" name="source" output="screen">
+  <node pkg="camultiplex" type="independent_source" name="source" output="screen" ns="camera_multiplex">
 
     <param name="diversity" type="int" value="2" />
     <param name="FPS" type="int" value="60" />

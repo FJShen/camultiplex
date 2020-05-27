@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="camultiplex" type="independent_drain" name="drain" output="screen">
+  <node pkg="camultiplex" type="independent_drain" name="drain" output="screen" ns="camera_multiplex">
 
     <param name="diversity" type="int" value="2" />
     <param name="base_path" type="string" value="/media/nvidia/ExtremeSSD" />
