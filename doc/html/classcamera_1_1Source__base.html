@@ -141,7 +141,7 @@ Private Attributes</h2></td></tr>
 <h2>Usage</h2>
 <p><a class="el" href="classcamera_1_1Source__base.html" title="Interfaces with the camera and publishes the image frames in the form of sensor_msgs::Image. ">Source_base</a> is an abstract class that provides nearly all functionality needed by a source node which interfaces with the camera. Its two pure virtual functions, <a class="el" href="classcamera_1_1Source__base.html#aaa7750e5c3707785ef80f728af04f535">getMyNodeHandle</a> and <a class="el" href="classcamera_1_1Source__base.html#afbe54dd4345ec3f9f3c410dbe42a78f9">getMyPrivateNodeHandle</a> need to be implemented by derived class depending on whether they are nodes or nodelets. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00085">85</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00082">82</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="adc4192680624777f0cb174e83544fcf9"></a>
 <div class="memitem">
@@ -448,7 +448,7 @@ Private Attributes</h2></td></tr>
 <p>rs2::align is a post-processing block that can align one channel to the view point of another channel.</p>
 <dl class="section see"><dt>See also</dt><dd>How post-processing blocks work on depth frames: <a href="https://dev.intelrealsense.com/docs/depth-post-processing">https://dev.intelrealsense.com/docs/depth-post-processing</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00209">209</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00206">206</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -472,7 +472,7 @@ Private Attributes</h2></td></tr>
 
 <p>Realsense device configurations. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00249">249</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00246">246</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -499,7 +499,7 @@ Private Attributes</h2></td></tr>
 <p>Will be allocated memory when <a class="el" href="classcamera_1_1Source__base.html#a0ef6e79de392e4c2482851dab189ec89" title="Initialize and start the source node. ">Source_base::initialize</a> is called. Memory freed in destructor.</p>
 <p>Raw pointers are prone to memory leakage and illegal access. Shall be safer if std::vector is used. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00140">140</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00137">137</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -525,7 +525,7 @@ Private Attributes</h2></td></tr>
 <p>Default number of channel diversity (in other words, # of threads). It is equal to the size of the dynamically-allocated arrays <a class="el" href="classcamera_1_1Source__base.html#a3871b3032289f365dcf8f20e084bd63c" title="Dynamical array for depth publishers. ">Source_base::depth_pub</a> and <a class="el" href="classcamera_1_1Source__base.html#a0f8b2c1341f9538c36c8231b71cb8711" title="Dynamical array for RGB publishers. ">Source_base::rgb_pub</a>, and the size of vector <a class="el" href="classcamera_1_1Source__base.html#a1da00e09dd60e485212c7e8de793419b" title="Thread container for all depth and RGB publishers. ">Source_base::thread_list</a>.</p>
 <p>Default value: <a class="el" href="namespacecamera.html#ac55bb398ff1f459342db2e265e1172ed">camera::Default_source_diversity</a>. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00180">180</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00177">177</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -551,7 +551,7 @@ Private Attributes</h2></td></tr>
 <p>If turned on (ture), depth frames will be aligned to the viewpoint of the RGB frames before being transmitted. Turning on alignment causes a non-negligible overhead on CPU time but liberates the user from manually cropping the depth images.</p>
 <p>Default value: false. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00170">170</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00167">167</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -579,7 +579,7 @@ Private Attributes</h2></td></tr>
 <dl class="section see"><dt>See also</dt><dd>The datasheet for the device: <a href="https://dev.intelrealsense.com/docs/intel-realsense-d400-series-product-family-datasheet">https://dev.intelrealsense.com/docs/intel-realsense-d400-series-product-family-datasheet</a></dd></dl>
 <p>[May 21st, 2020] It is said that the DS 435 device can be configured to capture as high as 300 frames per second with a resolution of 100*840. Please checkout this website: <a href="https://dev.intelrealsense.com/docs/high-speed-capture-mode-of-intel-realsense-depth-camera-d435">https://dev.intelrealsense.com/docs/high-speed-capture-mode-of-intel-realsense-depth-camera-d435</a> </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00198">198</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00195">195</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -603,7 +603,7 @@ Private Attributes</h2></td></tr>
 
 <p>Realsense pipeline. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00247">247</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00244">244</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -629,7 +629,7 @@ Private Attributes</h2></td></tr>
 <p>RGB images are in RGB8 format. The receiver will need to convert this format into BGR8 before calling cv::imwrite. See <a class="el" href="classcamera_1_1Drain__base.html#ad0f538cd55cff2cde3893a0558c533a3">Drain_base::drain_rgb_callback</a>.</p>
 <p>On how this is used and its caveats, please refer to <a class="el" href="classcamera_1_1Source__base.html#a3871b3032289f365dcf8f20e084bd63c">depth_pub</a> </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00150">150</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00147">147</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -657,7 +657,7 @@ Private Attributes</h2></td></tr>
 <p>Since this variable will be modified by many threads, a mutex is needed.</p>
 <dl class="section see"><dt>See also</dt><dd>ROS documentation for sensor_msgs::Image: <a href="http://docs.ros.org/kinetic/api/sensor_msgs/html/msg/Image.html">http://docs.ros.org/kinetic/api/sensor_msgs/html/msg/Image.html</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00236">236</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00233">233</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -682,7 +682,7 @@ Private Attributes</h2></td></tr>
 <p>Mutex to protect <a class="el" href="classcamera_1_1Source__base.html#a22014e05c45ac4b8a24331778f46c201" title="Serial number counter for frames that it obtained from the camera. ">Source_base::seq</a> against multi-thread access. </p>
 <p>Each thread has to lock <a class="el" href="classcamera_1_1Source__base.html#a39ee716a23bcd84e754d3f8abc71b301" title="Mutex to protect Source_base::seq against multi-thread access. ">Source_base::seq_mutex</a> before manipulating the serial number counter <a class="el" href="classcamera_1_1Source__base.html#a22014e05c45ac4b8a24331778f46c201" title="Serial number counter for frames that it obtained from the camera. ">Source_base::seq</a> </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00244">244</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00241">241</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -707,7 +707,7 @@ Private Attributes</h2></td></tr>
 <p>Message publisher. </p>
 <p>Not used at this moment. In the future might be used as a side-channel for internodal communications. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00158">158</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00155">155</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -733,7 +733,7 @@ Private Attributes</h2></td></tr>
 <p>The size of <a class="el" href="classcamera_1_1Source__base.html#a1da00e09dd60e485212c7e8de793419b" title="Thread container for all depth and RGB publishers. ">Source_base::thread_list</a> depends on the value of <a class="el" href="classcamera_1_1Source__base.html#ada2274d17e5cda7912397fc318fc63ba" title="Configurable parameter. ">Source_base::diversity</a>.</p>
 <p>For each pair of depth publisher and RGB publisher, they share a thread and publish their messages together </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00219">219</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00216">216</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -747,7 +747,7 @@ Private Attributes</h2></td></tr>
 <hr size="1"><div style="align: right;">
 <a href="http://wiki.ros.org/camultiplex">camultiplex</a><br />
 Author(s): Fangjia Shen <shen449@purdue.edu></br />
-<small>autogenerated on Thu May 28 2020 11:39:17</small>
+<small>autogenerated on Thu May 28 2020 12:21:53</small>
 </div>
 </body>
 </html>

@@ -148,7 +148,11 @@ Suppose we have two hosts (computers): H1 (192.168.0.11) and H2 (192.168.0.22); 
 
 4. On H1 and H2 separately bring up ROS nodes. Message will be transmitted in the form of TCP (or UDP) packets. 
 
-Note: When running a network of ROS nodes on different hosts, nodelets will not be a choice - it is the shared memory mechanism that makes nodelets work.  
+Notes: 
+
+1. A node can coexist and talk with a nodelet, whether they are on a same or different host. 
+
+2. Two nodelets *can* talk with each other on different hosts in LAN, however they will not benefit from the shared-memory mechanism, and extra work has to be done to ensure their nodelet managers have distinct names.
 
 ---
 
@@ -169,7 +173,7 @@ Comments:
 
 2) The number of subscribers are counted in pairs of RGB-Depth subscribers - therefore 1 RGB subscriber and 1 Depth subscriber are counted as "one" subscriber in the context of diversity. 
 
-3) Referring to (2), the same logic applies for publishers.
+3) Referring to (2), the same logic applies to publishers.
 
 ---
 
@@ -179,10 +183,13 @@ In the package's directory (camultiplex/) call:
 
 ```rosdoc_lite .```
 
-Doxygen will be called and the documentation mainpage will be located at `camultiplex/doc/html/index.html`
+Doxygen will be called and the documentation mainpage will be located at `camultiplex/doc/html/index.html`.
+
+Notes: 
+
+1. It has been noticed by the developer that ```rosdoc_lite``` only adds new files and modifies existing files in the /doc directory, but never removes obsolete files (E.g., you rename a class from A_old to A_new, so A_old no longer exists as class; after calling ```rosdoc_lite```, the HTML files for A_new is added to the /doc directory, but the files for A_old still remain.). Therefore, it is recommended that the developer manually remove all obsolete files in /doc after he refactors the code.
 
 \see http://wiki.ros.org/rosdoc_lite
-
 
 ---
 

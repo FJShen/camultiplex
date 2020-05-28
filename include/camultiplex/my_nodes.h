@@ -13,7 +13,6 @@
 #define RGB 0x0000
 #define DEPTH 0x0001
 
-//todo: re-evaluate access specifiers for each method and member variable
 
 /**
  * \namespace camera
@@ -55,8 +54,6 @@
  * are *abstract* classes that cannot be instantiated.
  *
  * Refer to external source for how node handles work: http://wiki.ros.org/roscpp/Overview/NodeHandles, http://wiki.ros.org/nodelet
- *
- * //todo: can a nodelet and a non-nodelet talk with each other?
  *
  * \see Source_base, Drain_base
  */
