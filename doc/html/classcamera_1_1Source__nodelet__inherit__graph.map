@@ -1,0 +1,3 @@
+<map id="camera::Source_nodelet" name="camera::Source_nodelet">
+<area shape="rect" id="node2" href="$classcamera_1_1Source__base.html" title="Interfaces with the camera and publishes the image frames in the form of sensor_msgs::Image. " alt="" coords="5,5,155,32"/>
+</map>
