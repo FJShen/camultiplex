@@ -365,6 +365,25 @@ namespace camera {
     * \brief The non-nodelet version of source
     */
     class Source_independent : public Source_base {
+
+    public:
+        ///calls selfInit()
+        Source_independent() {
+            selfInit();
+        }
+    
+    
+        ///Deletes all parameters that the source node had added to ROS parameter server in Source_base::initialize
+        virtual ~Source_independent();
+        
+    protected:
+        ///Returns \ref nh
+        virtual ros::NodeHandle& getMyNodeHandle() override;
+    
+        
+        ///Returns \ref nph
+        virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
+        
     private:
         /**
          * \brief The node's handle
@@ -372,8 +391,8 @@ namespace camera {
          * For the (public) node handle of an independent node, it does not need to be explicitly defined. It gets initialized (by calling ros::NodeHandle()) automatically during construction.
          */
         ros::NodeHandle nh;
-        
-        
+    
+    
         /**
          * \brief The node's private handle
          *
@@ -384,8 +403,7 @@ namespace camera {
          * before calling Source_base::initialize().
          */
         ros::NodeHandle nph;
-
-    protected:
+    
         //equivalent of method void nodelet::Nodelet::onInit(), but since Source_independent is not dereived from Nodelet
         //we just have to call selfInit() in constructor
         /**
@@ -396,24 +414,7 @@ namespace camera {
          * \see nph
          */
         void selfInit();
-    
-        
-        ///Returns \ref nh
-        virtual ros::NodeHandle& getMyNodeHandle() override;
-    
-        
-        ///Returns \ref nph
-        virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
-        
-    public:
-        ///calls selfInit()
-        Source_independent() {
-            selfInit();
-        }
-        
-        
-        ///Deletes all parameters that the source node had added to ROS parameter server in Source_base::initialize
-        virtual ~Source_independent();
+
     };
     
     /**
@@ -690,7 +691,15 @@ namespace camera {
     
         ///Deletes all parameters (diversity, base_path) related to the drain.
         virtual ~Drain_independent();
+
+    protected:
+        /// Returns \ref nh.
+        virtual ros::NodeHandle& getMyNodeHandle() override;
     
+    
+        ///Returns \ref nph.
+        virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
+        
     private:
         ros::NodeHandle nh;  ///Public node handle.
         ros::NodeHandle nph; ///Private node handle
@@ -701,14 +710,7 @@ namespace camera {
          * Sets up private node handle then calls Drain_independent::initialize.
          */
         void selfInit();
-    
-    protected:
-        /// Returns \ref nh.
-        virtual ros::NodeHandle& getMyNodeHandle() override;
-        
-        
-        ///Returns \ref nph.
-        virtual ros::NodeHandle& getMyPrivateNodeHandle() override;
+
     };
     
 }

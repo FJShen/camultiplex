@@ -131,7 +131,7 @@ Private Attributes</h2></td></tr>
 <h2>Usage</h2>
 <p>Source_drain is an abstract class that provides nearly all functionality needed by a source node which interfaces with the camera. Its two pure virtual functions, getMyNodeHandle and getMyPrivateNodeHandle need to be implemented by derived classes. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00432">432</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00433">433</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="aa0ade441f6b17040ee8d25b8aa785f4c"></a>
 <div class="memitem">
@@ -156,7 +156,7 @@ Private Attributes</h2></td></tr>
 
 <p>Initializes depth_sub and rgb_sub as nullptr. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00437">437</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00438">438</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -539,7 +539,7 @@ ROS publisher and subscribers <a href="http://wiki.ros.org/roscpp/Overview/Publi
 <p>The path where the folder will be created. </p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classcamera_1_1Drain__base.html#ade118bf9029c601f33d5b4f6cb36d2d5" title="Create a new directory under base path. ">create_directories</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00532">532</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00533">533</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -565,7 +565,7 @@ ROS publisher and subscribers <a href="http://wiki.ros.org/roscpp/Overview/Publi
 <p>Call <a class="el" href="classhelper_1_1Counter.html#afc12d9590eb63f4edcb223ba7aef2fd9" title="updateSeq ">helper::Counter::updateSeq</a> upon the serial number of every received frame in drain_rgb_callback or drain_depth_callback.</p>
 <p>Example: </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> callback(<span class="keyword">const</span> sensor_msgs::Image::ConstPtr&amp; msg){</div><div class="line">     <span class="comment">//process images</span></div><div class="line">     <span class="comment">//...</span></div><div class="line"></div><div class="line">     <span class="comment">//update counter with serial number</span></div><div class="line">     <a class="code" href="classcamera_1_1Drain__base.html#a906ffb8d2289a7f5126b95c371787839">depth_counter</a>.<a class="code" href="classhelper_1_1Counter.html#afc12d9590eb63f4edcb223ba7aef2fd9">updateSeq</a>(std::stoul(msg-&gt;header.frame_id));</div><div class="line">}</div></div><!-- fragment --><p><a class="el" href="classhelper_1_1Counter.html" title="Keeps track of the index of the images being received by the drain. ">helper::Counter</a> has an in-built mutex to ensure thread safety. No need for the caller to do additional protection. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classhelper_1_1Counter.html" title="Keeps track of the index of the images being received by the drain. ">helper::Counter</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00517">517</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00518">518</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -589,7 +589,7 @@ ROS publisher and subscribers <a href="http://wiki.ros.org/roscpp/Overview/Publi
 
 <p>Dynamic array of depth channel subscribers. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00477">477</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00478">478</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -614,7 +614,7 @@ ROS publisher and subscribers <a href="http://wiki.ros.org/roscpp/Overview/Publi
 <p>Drain diversity. </p>
 <p>Default value: <a class="el" href="namespacecamera.html#acb72316f1bff6bbfdc420a328329b907">camera::Default_drain_diversity</a> </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00547">547</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00548">548</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -639,7 +639,7 @@ ROS publisher and subscribers <a href="http://wiki.ros.org/roscpp/Overview/Publi
 <p>Path of the created directory (the directory that contains the sub-directories rgb_images and depth_images) </p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classcamera_1_1Drain__base.html#ade118bf9029c601f33d5b4f6cb36d2d5" title="Create a new directory under base path. ">create_directories</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00539">539</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00540">540</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -664,7 +664,7 @@ ROS publisher and subscribers <a href="http://wiki.ros.org/roscpp/Overview/Publi
 <p>Count the number of received RGB frames and estimate lost of frames during transmission. </p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classcamera_1_1Drain__base.html#a906ffb8d2289a7f5126b95c371787839" title="Count the number of received depth frames and estimate lost of frames during transmission. ">depth_counter</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00525">525</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00526">526</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -688,7 +688,7 @@ ROS publisher and subscribers <a href="http://wiki.ros.org/roscpp/Overview/Publi
 
 <p>Dynamic array of RGB channel subscribers. </p>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00483">483</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00484">484</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -714,7 +714,7 @@ ROS publisher and subscribers <a href="http://wiki.ros.org/roscpp/Overview/Publi
 <p>timerCallback is set to be called every 5 seconds to display information about the number of received frames.</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classcamera_1_1Drain__base.html#ac84c8172e28f92cb0ffb6af416d53740" title="Prints the transmission loss estimate. Being called by the timer everytime the timer has expired...">timerCallback</a> </dd></dl>
 
-<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00493">493</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
+<p>Definition at line <a class="el" href="my__nodes_8h_source.html#l00494">494</a> of file <a class="el" href="my__nodes_8h_source.html">my_nodes.h</a>.</p>
 
 </div>
 </div>
@@ -728,7 +728,7 @@ ROS publisher and subscribers <a href="http://wiki.ros.org/roscpp/Overview/Publi
 <hr size="1"><div style="align: right;">
 <a href="http://wiki.ros.org/camultiplex">camultiplex</a><br />
 Author(s): Fangjia Shen <shen449@purdue.edu></br />
-<small>autogenerated on Wed May 27 2020 17:53:31</small>
+<small>autogenerated on Wed May 27 2020 22:05:27</small>
 </div>
 </body>
 </html>
