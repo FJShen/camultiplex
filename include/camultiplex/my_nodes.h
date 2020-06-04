@@ -194,6 +194,8 @@ namespace camera {
         */
         int FPS = camera::Default_FPS;
         
+        float exposure = 200;
+        
         
         /**
          * \brief Post-processing blocks to align the depth frame to the RGB frame. Each thread owns one.

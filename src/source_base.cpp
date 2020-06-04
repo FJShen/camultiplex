@@ -5,7 +5,7 @@
 #include <nodelet/nodelet.h>
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/image_encodings.h"
-
+#include "camultiplex/helper.h"
 #include <boost/thread.hpp>
 #include <vector>
 
@@ -48,6 +48,24 @@ namespace camera {
         
         for (int i = 0; i < diversity; ++i) {
             align_to_color.emplace_back(RS2_STREAM_COLOR);
+        }
+    
+        {
+            auto const i = p.get_active_profile().get_stream(
+                    RS2_STREAM_COLOR).as<rs2::video_stream_profile>().get_intrinsics();
+        
+            helper::print_intrinsics(i, "rs2_stream_color");
+        }
+        {
+            auto const i = p.get_active_profile().get_stream(
+                    RS2_STREAM_DEPTH).as<rs2::video_stream_profile>().get_intrinsics();
+    
+            helper::print_intrinsics(i, "rs2_stream_depth");
+        }
+        {
+            auto const r_profile = p.get_active_profile().get_stream(RS2_STREAM_COLOR).as<rs2::stream_profile>();
+            auto const ex = p.get_active_profile().get_stream(RS2_STREAM_DEPTH).as<rs2::stream_profile>().get_extrinsics_to(r_profile);
+            helper::print_extrinsics(ex, "depth to color");
         }
         
         launchThreads();
@@ -121,7 +139,24 @@ namespace camera {
         
         //let the camera start working
         try {
-            p.start(c);
+            auto p_profile = p.start(c);
+            
+            //set RGB camera exposure if defined
+            if(private_handle.getParam("exposure", exposure)){
+                rs2::device dev = p_profile.get_device();
+    
+                std::vector<rs2::sensor> sensor_vec = dev.query_sensors();
+                for(auto& x : sensor_vec){
+                    const char* name = x.get_info(RS2_CAMERA_INFO_NAME);
+                    std::cout<<"\n\nsensor: "<<name<<"\n";
+                    if (std::string(name) == std::string{"RGB Camera"}){
+                        x.set_option(RS2_OPTION_EXPOSURE, exposure);
+                        std::cout<<"Exposure is manually set to "<<exposure<<", auto-exposure will be disabled\n";
+                    }
+                }
+            }
+            
+            
         }
         catch (rs2::error& err) {
             std::cout << "Caught rs2::error, failed_function=" << err.get_failed_function() << ", message= "

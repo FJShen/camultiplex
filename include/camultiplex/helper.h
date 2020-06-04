@@ -3,6 +3,7 @@
 
 #include <string>
 #include <boost/thread.hpp>
+#include <librealsense2/rs.hpp>
 
 /**
  * \namespace helper
@@ -26,6 +27,9 @@ namespace helper {
      * \return Time in microseconds
      */
     std::string get_time_stamp_str();
+    
+    void print_intrinsics(rs2_intrinsics const&, std::string s = "");
+    void print_extrinsics(rs2_extrinsics const&, std::string s = "");
     
     /**
      * \class Counter helper.h

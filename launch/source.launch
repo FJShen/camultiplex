@@ -5,6 +5,7 @@
     <param name="diversity" type="int" value="2" />
     <param name="FPS" type="int" value="60" />
     <param name="align" type="bool" value="false" />
+    <param name="exposure" type="int" value="100"/>
 
   </node>
 </launch>
